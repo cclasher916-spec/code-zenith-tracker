@@ -1,33 +1,74 @@
 import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import RoleDashboard from "@/components/RoleDashboard";
+import AuthModal from "@/components/auth/AuthModal";
 import { Code2, Users, Trophy, BarChart3, Settings } from "lucide-react";
 
 const Index = () => {
+  const { user, profile, loading } = useAuth();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleRoleSelect = (role: string) => {
-    setSelectedRole(role);
+    if (user && profile) {
+      // Authenticated users can only access their actual role or view demos
+      if (role === profile.role) {
+        setSelectedRole(role);
+      } else {
+        // Show demo dashboard for other roles
+        setSelectedRole(role);
+      }
+    } else {
+      // Non-authenticated users see demo dashboards
+      setSelectedRole(role);
+    }
   };
 
   const handleGetStarted = () => {
-    // Scroll to role selection or show modal
-    document.getElementById('role-selection')?.scrollIntoView({ behavior: 'smooth' });
+    if (user && profile) {
+      // Redirect authenticated users to their dashboard
+      setSelectedRole(profile.role);
+    } else {
+      // Show auth modal for non-authenticated users
+      setShowAuthModal(true);
+    }
   };
 
   const handleBackToHome = () => {
     setSelectedRole(null);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center mx-auto mb-4">
+            <Code2 className="w-6 h-6 text-white animate-spin" />
+          </div>
+          <p className="text-lg font-medium">Loading MVIT Coding Tracker...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (selectedRole) {
     return (
       <>
-        <RoleDashboard role={selectedRole} onBack={handleBackToHome} />
+        <RoleDashboard 
+          role={selectedRole} 
+          onBack={handleBackToHome} 
+          isDemo={!user || selectedRole !== profile?.role}
+        />
         <Toaster />
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)} 
+        />
       </>
     );
   }
@@ -36,7 +77,10 @@ const Index = () => {
     <>
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <Header onRoleSelect={handleRoleSelect} />
+        <Header 
+          onRoleSelect={handleRoleSelect} 
+          onAuthModal={() => setShowAuthModal(true)}
+        />
 
         {/* Hero Section */}
         <HeroSection onGetStarted={handleGetStarted} />
@@ -49,10 +93,20 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-space-grotesk font-bold mb-4">
-                Choose Your Role
+                {user && profile ? (
+                  <>
+                    Welcome back, <span className="text-primary">{profile.full_name.split(' ')[0]}</span>!
+                  </>
+                ) : (
+                  'Choose Your Role'
+                )}
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Experience personalized dashboards designed for your specific needs and responsibilities
+                {user && profile ? (
+                  `Access your ${profile.role.replace('_', ' ')} dashboard or explore other role interfaces`
+                ) : (
+                  'Experience personalized dashboards designed for your specific needs and responsibilities'
+                )}
               </p>
             </div>
 
@@ -67,7 +121,7 @@ const Index = () => {
                   features: ['Personal Analytics', 'Progress Tracking', 'Peer Comparison']
                 },
                 {
-                  id: 'team-lead',
+                  id: 'team_lead',
                   title: 'Team Lead',
                   description: 'Manage your team and monitor collective performance',
                   icon: Users,
@@ -100,11 +154,18 @@ const Index = () => {
                 }
               ].map((role) => {
                 const Icon = role.icon;
+                const isUserRole = user && profile && role.id === profile.role;
+                const isAccessible = !user || role.id === profile?.role || true; // Allow demo access
+                
                 return (
                   <div
                     key={role.id}
-                    className="group relative bg-card rounded-2xl p-6 border border-border hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer"
-                    onClick={() => handleRoleSelect(role.id)}
+                    className={`group relative bg-card rounded-2xl p-6 border transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${
+                      isUserRole 
+                        ? 'border-primary shadow-lg ring-2 ring-primary/20' 
+                        : 'border-border hover:shadow-2xl'
+                    } ${!isAccessible ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={() => isAccessible && handleRoleSelect(role.id)}
                   >
                     <div className={`absolute inset-0 bg-gradient-to-br ${role.color} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-300`}></div>
                     
@@ -113,8 +174,17 @@ const Index = () => {
                         <Icon className="w-8 h-8 text-white" />
                       </div>
                       
-                      <h3 className="text-xl font-space-grotesk font-bold mb-2 group-hover:text-primary transition-colors">
+                      {isUserRole && (
+                        <div className="absolute top-2 right-2">
+                          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        </div>
+                      )}
+                      
+                      <h3 className={`text-xl font-space-grotesk font-bold mb-2 transition-colors ${
+                        isUserRole ? 'text-primary' : 'group-hover:text-primary'
+                      }`}>
                         {role.title}
+                        {isUserRole && <span className="text-sm ml-2 text-green-600">(Your Role)</span>}
                       </h3>
                       
                       <p className="text-muted-foreground text-sm mb-4 min-h-[2.5rem]">
@@ -122,7 +192,7 @@ const Index = () => {
                       </p>
                       
                       <div className="space-y-2">
-                        {role.features.map((feature, index) => (
+                        {role.features.map((feature) => (
                           <div key={feature} className="flex items-center text-xs text-muted-foreground">
                             <div className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></div>
                             {feature}
@@ -132,10 +202,13 @@ const Index = () => {
                       
                       <div className="mt-6">
                         <Button 
-                          className="w-full group-hover:shadow-lg transition-all duration-300"
-                          variant="outline"
+                          className={`w-full group-hover:shadow-lg transition-all duration-300 ${
+                            isUserRole ? 'bg-primary hover:bg-primary/90' : ''
+                          }`}
+                          variant={isUserRole ? "default" : "outline"}
+                          disabled={!isAccessible}
                         >
-                          View Dashboard
+                          {isUserRole ? 'Open Dashboard' : 'View Demo'}
                         </Button>
                       </div>
                     </div>
@@ -144,12 +217,25 @@ const Index = () => {
               })}
             </div>
             
-            {/* Demo Notice */}
+            {/* Authentication Notice */}
             <div className="text-center mt-12 p-6 bg-primary/5 rounded-xl border border-primary/20">
-              <p className="text-sm text-muted-foreground">
-                <strong>Demo Mode:</strong> Click any role above to explore the dashboard interface. 
-                Real implementation would include authentication and role-based access control.
-              </p>
+              {user && profile ? (
+                <p className="text-sm text-muted-foreground">
+                  <strong>Welcome {profile.full_name}!</strong> You can access your actual dashboard or explore demo interfaces for other roles.
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  <strong>Demo Mode:</strong> Click any role above to explore the dashboard interface. 
+                  Sign in for full access to real data and personalized features.
+                  <Button 
+                    variant="link" 
+                    className="ml-2 p-0 h-auto"
+                    onClick={() => setShowAuthModal(true)}
+                  >
+                    Sign In Now
+                  </Button>
+                </p>
+              )}
             </div>
           </div>
         </section>
@@ -172,6 +258,11 @@ const Index = () => {
           </div>
         </footer>
       </div>
+      
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
       <Toaster />
     </>
   );

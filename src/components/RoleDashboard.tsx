@@ -2,6 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useDashboardData } from "@/components/dashboard/DashboardData";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   TrendingDown, 
   TrendingUp, 
@@ -13,201 +16,367 @@ import {
   ArrowLeft,
   Bell,
   Settings,
-  Download
+  Download,
+  AlertCircle,
+  Shield
 } from "lucide-react";
 
 interface RoleDashboardProps {
   role: string;
   onBack: () => void;
+  isDemo?: boolean;
 }
 
-const RoleDashboard = ({ role, onBack }: RoleDashboardProps) => {
+const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => {
+  const { profile } = useAuth();
+  const { stats, loading, error } = useDashboardData(role);
+
   const roleConfigs = {
     student: {
       title: "Student Dashboard",
       subtitle: "Track your coding progress and performance",
       color: "text-blue-600",
       bgColor: "bg-blue-100",
-      cards: [
-        {
-          title: "Today's Progress",
-          value: "7 Problems",
-          change: "+2 from yesterday",
-          trend: "up",
-          color: "text-green-600"
-        },
-        {
-          title: "Current Streak",
-          value: "12 Days",
-          change: "Personal best!",
-          trend: "up",
-          color: "text-orange-600"
-        },
-        {
-          title: "Team Rank",
-          value: "#3 of 8",
-          change: "↑2 positions",
-          trend: "up",
-          color: "text-purple-600"
-        },
-        {
-          title: "Total Solved",
-          value: "284",
-          change: "This month: +45",
-          trend: "up",
-          color: "text-blue-600"
-        }
-      ]
     },
-    "team-lead": {
-      title: "Team Leader Dashboard",
+    team_lead: {
+      title: "Team Leader Dashboard", 
       subtitle: "Manage and monitor your team's performance",
       color: "text-purple-600",
       bgColor: "bg-purple-100",
-      cards: [
-        {
-          title: "Team Average",
-          value: "5.2/day",
-          change: "+0.8 this week",
-          trend: "up",
-          color: "text-green-600"
-        },
-        {
-          title: "Active Members",
-          value: "7 of 8",
-          change: "1 inactive today",
-          trend: "down",
-          color: "text-orange-600"
-        },
-        {
-          title: "Team Rank",
-          value: "#2 of 15",
-          change: "Section leaders",
-          trend: "up",
-          color: "text-purple-600"
-        },
-        {
-          title: "Monthly Goal",
-          value: "89%",
-          change: "On track",
-          trend: "up",
-          color: "text-blue-600"
-        }
-      ]
     },
     advisor: {
       title: "Class Advisor Dashboard",
       subtitle: "Monitor section performance and guide students",
       color: "text-green-600",
       bgColor: "bg-green-100",
-      cards: [
-        {
-          title: "Section Average",
-          value: "4.1/day",
-          change: "+12% this month",
-          trend: "up",
-          color: "text-green-600"
-        },
-        {
-          title: "Active Students",
-          value: "58 of 62",
-          change: "94% engagement",
-          trend: "up",
-          color: "text-blue-600"
-        },
-        {
-          title: "Top Performers",
-          value: "15 students",
-          change: ">10/day average",
-          trend: "up",
-          color: "text-purple-600"
-        },
-        {
-          title: "Need Attention",
-          value: "4 students",
-          change: "Follow-up required",
-          trend: "down",
-          color: "text-orange-600"
-        }
-      ]
     },
     hod: {
       title: "Head of Department",
       subtitle: "Department-wide analytics and strategic oversight",
       color: "text-amber-600",
       bgColor: "bg-amber-100",
-      cards: [
-        {
-          title: "Department Avg",
-          value: "3.8/day",
-          change: "+18% YoY growth",
-          trend: "up",
-          color: "text-green-600"
-        },
-        {
-          title: "Total Students",
-          value: "248 active",
-          change: "Across 4 sections",
-          trend: "up",
-          color: "text-blue-600"
-        },
-        {
-          title: "Placement Ready",
-          value: "82%",
-          change: "Above target",
-          trend: "up",
-          color: "text-purple-600"
-        },
-        {
-          title: "Faculty Usage",
-          value: "12 of 15",
-          change: "80% adoption",
-          trend: "up",
-          color: "text-amber-600"
-        }
-      ]
     },
     admin: {
       title: "System Administrator",
       subtitle: "Platform management and system oversight",
       color: "text-red-600",
       bgColor: "bg-red-100",
-      cards: [
-        {
-          title: "System Health",
-          value: "99.2%",
-          change: "Uptime this month",
-          trend: "up",
-          color: "text-green-600"
-        },
-        {
-          title: "Total Users",
-          value: "2,547",
-          change: "+127 this month",
-          trend: "up",
-          color: "text-blue-600"
-        },
-        {
-          title: "API Success",
-          value: "98.7%",
-          change: "Data collection rate",
-          trend: "up",
-          color: "text-purple-600"
-        },
-        {
-          title: "Support Tickets",
-          value: "3 open",
-          change: "2 resolved today",
-          trend: "down",
-          color: "text-red-600"
-        }
-      ]
     }
   };
 
   const config = roleConfigs[role as keyof typeof roleConfigs];
   
   if (!config) return null;
+
+  const getStatsCards = () => {
+    if (loading) {
+      return Array.from({ length: 4 }, (_, i) => (
+        <Card key={i} className="stats-card animate-pulse">
+          <CardHeader className="pb-2">
+            <div className="h-4 bg-muted rounded w-3/4"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-8 bg-muted rounded w-1/2 mb-2"></div>
+            <div className="h-4 bg-muted rounded w-2/3"></div>
+          </CardContent>
+        </Card>
+      ));
+    }
+
+    if (error) {
+      return (
+        <Alert className="col-span-full">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      );
+    }
+
+    switch (role) {
+      case 'student':
+        const personalStats = stats.personalStats;
+        if (!personalStats) return null;
+        
+        return [
+          {
+            title: "Today's Progress",
+            value: `${personalStats.todayProblems} Problems`,
+            change: personalStats.todayProblems > 0 ? `+${personalStats.todayProblems} today` : "No activity today",
+            trend: personalStats.todayProblems > 0 ? "up" : "down",
+            color: personalStats.todayProblems > 0 ? "text-green-600" : "text-orange-600"
+          },
+          {
+            title: "Current Streak",
+            value: `${personalStats.currentStreak} Days`,
+            change: personalStats.currentStreak > 5 ? "Great streak!" : "Keep going!",
+            trend: personalStats.currentStreak > 0 ? "up" : "down",
+            color: "text-orange-600"
+          },
+          {
+            title: "Team Rank",
+            value: `#${personalStats.teamRank} of 8`,
+            change: personalStats.teamRank <= 3 ? "Top performer!" : "Room to improve",
+            trend: personalStats.teamRank <= 3 ? "up" : "down",
+            color: "text-purple-600"
+          },
+          {
+            title: "Total Solved",
+            value: `${personalStats.totalSolved}`,
+            change: "This semester",
+            trend: "up",
+            color: "text-blue-600"
+          }
+        ].map((card, index) => (
+          <Card key={card.title} className="stats-card animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {card.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-space-grotesk font-bold mb-1">
+                {card.value}
+              </div>
+              <div className={`text-sm flex items-center ${card.color}`}>
+                {card.trend === 'up' ? (
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                ) : (
+                  <TrendingDown className="w-3 h-3 mr-1" />
+                )}
+                {card.change}
+              </div>
+            </CardContent>
+          </Card>
+        ));
+
+      case 'team_lead':
+        const teamStats = stats.teamStats;
+        if (!teamStats) return null;
+        
+        return [
+          {
+            title: "Team Average",
+            value: `${teamStats.teamAverage}/day`,
+            change: teamStats.teamAverage > 4 ? "+Excellent pace" : "Needs improvement",
+            trend: teamStats.teamAverage > 4 ? "up" : "down",
+            color: teamStats.teamAverage > 4 ? "text-green-600" : "text-orange-600"
+          },
+          {
+            title: "Active Members",
+            value: `${teamStats.activeMembers} of 8`,
+            change: teamStats.activeMembers >= 6 ? "Good engagement" : "Low activity",
+            trend: teamStats.activeMembers >= 6 ? "up" : "down",
+            color: teamStats.activeMembers >= 6 ? "text-green-600" : "text-orange-600"
+          },
+          {
+            title: "Team Rank",
+            value: `#${teamStats.teamRank} of 15`,
+            change: teamStats.teamRank <= 5 ? "Top performer!" : "Keep pushing",
+            trend: teamStats.teamRank <= 5 ? "up" : "down",
+            color: "text-purple-600"
+          },
+          {
+            title: "Monthly Goal",
+            value: `${teamStats.monthlyGoal}%`,
+            change: teamStats.monthlyGoal >= 80 ? "On track" : "Behind target",
+            trend: teamStats.monthlyGoal >= 80 ? "up" : "down",
+            color: "text-blue-600"
+          }
+        ].map((card, index) => (
+          <Card key={card.title} className="stats-card animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {card.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-space-grotesk font-bold mb-1">
+                {card.value}
+              </div>
+              <div className={`text-sm flex items-center ${card.color}`}>
+                {card.trend === 'up' ? (
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                ) : (
+                  <TrendingDown className="w-3 h-3 mr-1" />
+                )}
+                {card.change}
+              </div>
+            </CardContent>
+          </Card>
+        ));
+
+      case 'advisor':
+        const sectionStats = stats.sectionStats;
+        if (!sectionStats) return null;
+        
+        return [
+          {
+            title: "Section Average",
+            value: `${sectionStats.sectionAverage}/day`,
+            change: sectionStats.sectionAverage > 3 ? "+Good progress" : "Needs guidance",
+            trend: sectionStats.sectionAverage > 3 ? "up" : "down",
+            color: "text-green-600"
+          },
+          {
+            title: "Active Students", 
+            value: `${sectionStats.activeStudents} of ${sectionStats.activeStudents + sectionStats.needAttention}`,
+            change: `${Math.round((sectionStats.activeStudents / (sectionStats.activeStudents + sectionStats.needAttention)) * 100)}% engagement`,
+            trend: "up",
+            color: "text-blue-600"
+          },
+          {
+            title: "Top Performers",
+            value: `${sectionStats.topPerformers} students`,
+            change: ">10/day average",
+            trend: "up",
+            color: "text-purple-600"
+          },
+          {
+            title: "Need Attention",
+            value: `${sectionStats.needAttention} students`,
+            change: sectionStats.needAttention === 0 ? "All engaged!" : "Follow-up required",
+            trend: sectionStats.needAttention === 0 ? "up" : "down",
+            color: sectionStats.needAttention === 0 ? "text-green-600" : "text-orange-600"
+          }
+        ].map((card, index) => (
+          <Card key={card.title} className="stats-card animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {card.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-space-grotesk font-bold mb-1">
+                {card.value}
+              </div>
+              <div className={`text-sm flex items-center ${card.color}`}>
+                {card.trend === 'up' ? (
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                ) : (
+                  <TrendingDown className="w-3 h-3 mr-1" />
+                )}
+                {card.change}
+              </div>
+            </CardContent>
+          </Card>
+        ));
+
+      case 'hod':
+        const departmentStats = stats.departmentStats;
+        if (!departmentStats) return null;
+        
+        return [
+          {
+            title: "Department Avg",
+            value: `${departmentStats.departmentAverage}/day`,
+            change: "+18% YoY growth",
+            trend: "up",
+            color: "text-green-600"
+          },
+          {
+            title: "Total Students",
+            value: `${departmentStats.totalStudents} active`,
+            change: "Across all sections",
+            trend: "up",
+            color: "text-blue-600"
+          },
+          {
+            title: "Placement Ready",
+            value: `${Math.round((departmentStats.placementReady / departmentStats.totalStudents) * 100)}%`,
+            change: "Above target",
+            trend: "up",
+            color: "text-purple-600"
+          },
+          {
+            title: "Faculty Usage",
+            value: `${departmentStats.facultyUsage} active`,
+            change: "Platform adoption",
+            trend: "up",
+            color: "text-amber-600"
+          }
+        ].map((card, index) => (
+          <Card key={card.title} className="stats-card animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {card.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-space-grotesk font-bold mb-1">
+                {card.value}
+              </div>
+              <div className={`text-sm flex items-center ${card.color}`}>
+                {card.trend === 'up' ? (
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                ) : (
+                  <TrendingDown className="w-3 h-3 mr-1" />
+                )}
+                {card.change}
+              </div>
+            </CardContent>
+          </Card>
+        ));
+
+      case 'admin':
+        const systemStats = stats.systemStats;
+        if (!systemStats) return null;
+        
+        return [
+          {
+            title: "System Health",
+            value: `${systemStats.systemHealth}%`,
+            change: "Uptime this month",
+            trend: "up",
+            color: "text-green-600"
+          },
+          {
+            title: "Total Users",
+            value: `${systemStats.totalUsers}`,
+            change: "Active accounts",
+            trend: "up",
+            color: "text-blue-600"
+          },
+          {
+            title: "API Success",
+            value: `${systemStats.apiSuccess}%`,
+            change: "Data collection rate",
+            trend: "up",
+            color: "text-purple-600"
+          },
+          {
+            title: "Support Tickets",
+            value: `${systemStats.supportTickets} open`,
+            change: "Resolved today",
+            trend: "down",
+            color: "text-red-600"
+          }
+        ].map((card, index) => (
+          <Card key={card.title} className="stats-card animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {card.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-space-grotesk font-bold mb-1">
+                {card.value}
+              </div>
+              <div className={`text-sm flex items-center ${card.color}`}>
+                {card.trend === 'up' ? (
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                ) : (
+                  <TrendingDown className="w-3 h-3 mr-1" />
+                )}
+                {card.change}
+              </div>
+            </CardContent>
+          </Card>
+        ));
+
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pt-20 pb-12">
@@ -239,40 +408,34 @@ const RoleDashboard = ({ role, onBack }: RoleDashboardProps) => {
           </div>
         </div>
 
+        {/* Demo/Authentication Notice */}
+        {isDemo && (
+          <Alert className="mb-8 border-primary/50 bg-primary/5">
+            <Shield className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Demo Mode:</strong> This is a demonstration of the {config.title.toLowerCase()}. 
+              {profile ? (
+                <>Sign in with a {role.replace('_', ' ')} account to access real data and full functionality.</>
+              ) : (
+                <>Sign in to access your actual dashboard with real data and personalized features.</>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Role Badge */}
         <div className="mb-8">
           <Badge className={`${config.bgColor} ${config.color} text-sm px-3 py-1`}>
-            {role.charAt(0).toUpperCase() + role.slice(1).replace('-', ' ')} Access
+            {role.charAt(0).toUpperCase() + role.slice(1).replace('_', ' ')} {isDemo ? 'Demo' : 'Access'}
           </Badge>
         </div>
 
         {/* Stats Cards */}
         <div className="dashboard-grid mb-8">
-          {config.cards.map((card, index) => (
-            <Card key={card.title} className="stats-card animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {card.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-space-grotesk font-bold mb-1">
-                  {card.value}
-                </div>
-                <div className={`text-sm flex items-center ${card.color}`}>
-                  {card.trend === 'up' ? (
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                  ) : (
-                    <TrendingDown className="w-3 h-3 mr-1" />
-                  )}
-                  {card.change}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {getStatsCards()}
         </div>
 
-        {/* Recent Activity */}
+        {/* Recent Activity and Performance Overview */}
         <div className="grid lg:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
@@ -284,10 +447,10 @@ const RoleDashboard = ({ role, onBack }: RoleDashboardProps) => {
             <CardContent>
               <div className="space-y-4">
                 {[
-                  { time: "2 hours ago", event: "Daily scraping completed", status: "success" },
-                  { time: "4 hours ago", event: "Team performance report generated", status: "info" },
-                  { time: "6 hours ago", event: "New student registered", status: "success" },
-                  { time: "1 day ago", event: "Weekly analytics updated", status: "info" },
+                  { time: "2 hours ago", event: isDemo ? "Demo: Daily data sync completed" : "Daily scraping completed", status: "success" },
+                  { time: "4 hours ago", event: isDemo ? "Demo: Sample report generated" : "Performance report generated", status: "info" },
+                  { time: "6 hours ago", event: isDemo ? "Demo: User activity simulated" : "New user registered", status: "success" },
+                  { time: "1 day ago", event: isDemo ? "Demo: Weekly stats updated" : "Weekly analytics updated", status: "info" },
                 ].map((activity, index) => (
                   <div key={index} className="flex items-center space-x-3 p-3 rounded-lg bg-muted/30">
                     <div className={`w-2 h-2 rounded-full ${
@@ -340,7 +503,7 @@ const RoleDashboard = ({ role, onBack }: RoleDashboardProps) => {
                       <span className="text-sm font-medium">Overall Rating</span>
                     </div>
                     <Badge variant="secondary" className="bg-success/10 text-success">
-                      Excellent
+                      {isDemo ? 'Demo' : 'Excellent'}
                     </Badge>
                   </div>
                 </div>
