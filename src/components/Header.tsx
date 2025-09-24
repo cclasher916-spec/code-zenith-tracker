@@ -101,6 +101,12 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>
+                  {profile.role === 'admin' && (
+                    <DropdownMenuItem onClick={() => window.open('/admin', '_blank')}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Admin Panel</span>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut}>
                     <LogOut className="mr-2 h-4 w-4" />

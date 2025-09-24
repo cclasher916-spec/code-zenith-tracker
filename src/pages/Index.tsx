@@ -7,12 +7,14 @@ import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import RoleDashboard from "@/components/RoleDashboard";
 import AuthModal from "@/components/auth/AuthModal";
-import { Code2, Users, Trophy, BarChart3, Settings } from "lucide-react";
+import CreateAdminDialog from "@/components/admin/CreateAdminDialog";
+import { Code2, Users, Trophy, BarChart3, Settings, Shield } from "lucide-react";
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showCreateAdmin, setShowCreateAdmin] = useState(false);
 
   const handleRoleSelect = (role: string) => {
     if (user && profile) {
@@ -263,6 +265,26 @@ const Index = () => {
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
+      
+      <CreateAdminDialog 
+        open={showCreateAdmin} 
+        onOpenChange={setShowCreateAdmin} 
+      />
+
+      {/* Floating Admin Setup Button */}
+      {!user && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <Button
+            onClick={() => setShowCreateAdmin(true)}
+            className="bg-red-600 hover:bg-red-700 text-white shadow-lg"
+            size="sm"
+          >
+            <Shield className="h-4 w-4 mr-2" />
+            Setup Admin
+          </Button>
+        </div>
+      )}
+
       <Toaster />
     </>
   );
