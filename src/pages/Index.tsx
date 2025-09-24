@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,14 @@ const Index = () => {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
+
+  // Auto-open the correct dashboard after login/registration
+  // If the user just authenticated, show their role dashboard automatically
+  useEffect(() => {
+    if (!loading && user && profile && !selectedRole) {
+      setSelectedRole(profile.role);
+    }
+  }, [loading, user, profile, selectedRole]);
 
   const handleRoleSelect = (role: string) => {
     if (user && profile) {

@@ -27,7 +27,7 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
 
   const roles = [
     { id: 'student', label: 'Student', icon: Code2, color: 'text-blue-600' },
-    { id: 'team-lead', label: 'Team Lead', icon: Users, color: 'text-purple-600' },
+    { id: 'team_lead', label: 'Team Lead', icon: Users, color: 'text-purple-600' },
     { id: 'advisor', label: 'Advisor', icon: Trophy, color: 'text-green-600' },
     { id: 'hod', label: 'HOD', icon: BarChart3, color: 'text-amber-600' },
     { id: 'admin', label: 'Admin', icon: Settings, color: 'text-red-600' },
@@ -102,7 +102,7 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
                     <span>Settings</span>
                   </DropdownMenuItem>
                   {profile.role === 'admin' && (
-                    <DropdownMenuItem onClick={() => window.open('/admin', '_blank')}>
+                    <DropdownMenuItem onClick={() => (window.location.href = '/admin')}>
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Admin Panel</span>
                     </DropdownMenuItem>
