@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import RoleDashboard from "@/components/RoleDashboard";
-import AuthModal from "@/components/auth/AuthModal";
+import RegistrationFlow from "@/components/registration/RegistrationFlow";
 import CreateAdminDialog from "@/components/admin/CreateAdminDialog";
 import { Code2, Users, Trophy, BarChart3, Settings, Shield } from "lucide-react";
 
@@ -75,7 +75,7 @@ const Index = () => {
           isDemo={!user || !profile || selectedRole !== profile?.role}
         />
         <Toaster />
-        <AuthModal 
+        <RegistrationFlow 
           isOpen={showAuthModal} 
           onClose={() => setShowAuthModal(false)} 
         />
@@ -269,7 +269,7 @@ const Index = () => {
         </footer>
       </div>
       
-      <AuthModal 
+      <RegistrationFlow 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
