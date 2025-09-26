@@ -85,7 +85,7 @@ export const useDashboardData = (role: string) => {
     const { data: dailyStats } = await supabase
       .from('daily_stats')
       .select('*')
-      .eq('user_id', profile.id)
+      .eq('user_id', profile.user_id)
       .eq('date', today);
 
     // Calculate totals
@@ -119,7 +119,7 @@ export const useDashboardData = (role: string) => {
           profiles!inner(full_name)
         )
       `)
-      .eq('team_lead_id', profile.id);
+      .eq('team_lead_id', profile.user_id);
 
     const team = teams?.[0];
     if (!team) {
@@ -165,7 +165,7 @@ export const useDashboardData = (role: string) => {
     // Get section students
     const { data: sectionStudents } = await supabase
       .from('profiles')
-      .select('id')
+      .select('user_id')
       .eq('section_id', profile.section_id)
       .eq('role', 'student');
 
@@ -181,7 +181,7 @@ export const useDashboardData = (role: string) => {
       return;
     }
 
-    const studentIds = sectionStudents.map(student => student.id);
+    const studentIds = sectionStudents.map(student => student.user_id);
     const today = new Date().toISOString().split('T')[0];
     
     const { data: sectionStats } = await supabase
@@ -214,7 +214,7 @@ export const useDashboardData = (role: string) => {
     // Get department students
     const { data: deptStudents } = await supabase
       .from('profiles')
-      .select('id')
+      .select('user_id')
       .eq('department_id', profile.department_id)
       .eq('role', 'student');
 
@@ -230,7 +230,7 @@ export const useDashboardData = (role: string) => {
       return;
     }
 
-    const studentIds = deptStudents.map(student => student.id);
+    const studentIds = deptStudents.map(student => student.user_id);
     const today = new Date().toISOString().split('T')[0];
     
     const { data: deptStats } = await supabase
@@ -246,7 +246,7 @@ export const useDashboardData = (role: string) => {
     // Get faculty count
     const { data: faculty } = await supabase
       .from('profiles')
-      .select('id')
+      .select('user_id')
       .eq('department_id', profile.department_id)
       .in('role', ['advisor', 'hod']);
 
@@ -264,7 +264,7 @@ export const useDashboardData = (role: string) => {
     // Get total user counts
     const { data: allUsers } = await supabase
       .from('profiles')
-      .select('id, role')
+      .select('user_id, role')
       .eq('is_active', true);
 
     // Get recent activity (approximation)

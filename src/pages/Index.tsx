@@ -72,7 +72,7 @@ const Index = () => {
         <RoleDashboard 
           role={selectedRole} 
           onBack={handleBackToHome} 
-          isDemo={!user || selectedRole !== profile?.role}
+          isDemo={!user || !profile || selectedRole !== profile?.role}
         />
         <Toaster />
         <AuthModal 
