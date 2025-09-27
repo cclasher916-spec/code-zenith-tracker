@@ -32,6 +32,9 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [activeTab, setActiveTab] = useState("signin");
   const [departments, setDepartments] = useState<Department[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   
   // Form states
   const [email, setEmail] = useState("");
@@ -99,6 +102,29 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    try {
+      setIsResettingPassword(true);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/`,
+      });
+
+      if (error) {
+        console.error('Password reset error:', error);
+        return;
+      }
+
+      setResetEmailSent(true);
+    } catch (error) {
+      console.error('Password reset error:', error);
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
   const resetForm = () => {
     setEmail("");
     setPassword("");
@@ -108,6 +134,8 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     setDepartmentId("");
     setSectionId("");
     setRole('student');
+    setShowForgotPassword(false);
+    setResetEmailSent(false);
   };
 
   return (
@@ -127,35 +155,110 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           </TabsList>
 
           <TabsContent value="signin" className="space-y-4">
-            <form onSubmit={handleSignIn} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
-                <Input
-                  id="signin-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your.email@mvit.edu.in"
-                  required
-                />
-              </div>
+            {showForgotPassword ? (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold">Reset Password</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Enter your email address and we'll send you a link to reset your password.
+                  </p>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="signin-password">Password</Label>
-                <Input
-                  id="signin-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
+                {resetEmailSent ? (
+                  <div className="text-center space-y-4">
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-green-800 text-sm">
+                        Password reset link sent to your email! Check your inbox and follow the instructions.
+                      </p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setShowForgotPassword(false);
+                        setResetEmailSent(false);
+                      }}
+                      className="w-full"
+                    >
+                      Back to Sign In
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">Email</Label>
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your.email@mvit.edu.in"
+                        required
+                      />
+                    </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Signing In..." : "Sign In"}
-              </Button>
-            </form>
+                    <div className="flex space-x-2">
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowForgotPassword(false)}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        className="flex-1" 
+                        disabled={isResettingPassword}
+                      >
+                        {isResettingPassword ? "Sending..." : "Send Reset Link"}
+                      </Button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            ) : (
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">Email</Label>
+                  <Input
+                    id="signin-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your.email@mvit.edu.in"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password">Password</Label>
+                  <Input
+                    id="signin-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <Button 
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="px-0 h-auto text-xs"
+                  >
+                    Forgot Password?
+                  </Button>
+                </div>
+
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Signing In..." : "Sign In"}
+                </Button>
+              </form>
+            )}
           </TabsContent>
 
           <TabsContent value="signup" className="space-y-4">

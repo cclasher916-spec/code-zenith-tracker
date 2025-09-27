@@ -24,6 +24,14 @@ interface HeaderProps {
 const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
   const { user, profile, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Debug auth state
+  console.log('Header - Auth State:', { 
+    hasUser: !!user, 
+    hasProfile: !!profile, 
+    userEmail: user?.email, 
+    profileRole: profile?.role 
+  });
 
   const roles = [
     { id: 'student', label: 'Student', icon: Code2, color: 'text-blue-600' },

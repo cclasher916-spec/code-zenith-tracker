@@ -49,6 +49,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const refreshProfile = async () => {
     if (!user) return;
     
+    console.log('Refreshing profile for user:', user.id);
+    
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -61,6 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
+      console.log('Profile data retrieved:', data);
       setProfile(data ?? null);
     } catch (error) {
       console.error('Error refreshing profile:', error);
