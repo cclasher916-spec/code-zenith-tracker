@@ -57,7 +57,7 @@ const RegistrationFlow = ({ isOpen, onClose }: RegistrationFlowProps) => {
 
   // Platform profile states
   const [platforms, setPlatforms] = useState([
-    { name: 'leetcode', display: 'LeetCode', required: true },
+    { name: 'leetcode', display: 'LeetCode', required: false },
     { name: 'codeforces', display: 'Codeforces', required: false },
     { name: 'hackerrank', display: 'HackerRank', required: false },
     { name: 'codechef', display: 'CodeChef', required: false },
@@ -373,11 +373,13 @@ const RegistrationFlow = ({ isOpen, onClose }: RegistrationFlowProps) => {
                         <SelectValue placeholder="Select department" />
                       </SelectTrigger>
                       <SelectContent>
-                        {departments.map((dept) => (
+                        {departments.length > 0 ? departments.map((dept) => (
                           <SelectItem key={dept.id} value={dept.id}>
                             {dept.name} ({dept.code})
                           </SelectItem>
-                        ))}
+                        )) : (
+                          <SelectItem value="" disabled>Loading departments...</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -390,11 +392,15 @@ const RegistrationFlow = ({ isOpen, onClose }: RegistrationFlowProps) => {
                           <SelectValue placeholder="Select section" />
                         </SelectTrigger>
                         <SelectContent>
-                          {filteredSections.map((section) => (
+                          {filteredSections.length > 0 ? filteredSections.map((section) => (
                             <SelectItem key={section.id} value={section.id}>
-                              Section {section.name}
+                              Section {section.code}
                             </SelectItem>
-                          ))}
+                          )) : (
+                            <SelectItem value="" disabled>
+                              {departmentId ? 'Loading sections...' : 'Select department first'}
+                            </SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -422,14 +428,14 @@ const RegistrationFlow = ({ isOpen, onClose }: RegistrationFlowProps) => {
               {/* Platform Profiles */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold">Coding Platform Profiles (Optional)</h3>
-                <p className="text-xs text-muted-foreground">Add your usernames to enable automatic progress tracking</p>
+                <p className="text-xs text-muted-foreground">Add your coding platform usernames to enable automatic progress tracking. All fields are optional.</p>
                 
                 <div className="grid grid-cols-2 gap-4">
                   {platforms.map((platform) => (
                     <div key={platform.name} className="space-y-2">
                       <Label className="flex items-center space-x-2">
                         <span>{platform.display}</span>
-                        {platform.required && <Badge variant="secondary" className="text-xs">Required</Badge>}
+                        <Badge variant="outline" className="text-xs">Optional</Badge>
                       </Label>
                       <Input
                         value={platformProfiles[platform.name] || ''}
@@ -437,7 +443,7 @@ const RegistrationFlow = ({ isOpen, onClose }: RegistrationFlowProps) => {
                           ...prev,
                           [platform.name]: e.target.value
                         }))}
-                        placeholder={`Your ${platform.display} username`}
+                        placeholder={`Your ${platform.display} username (optional)`}
                       />
                     </div>
                   ))}

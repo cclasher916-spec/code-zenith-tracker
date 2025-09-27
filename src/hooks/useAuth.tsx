@@ -150,9 +150,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             user_id: authData.user.id,
           });
 
+        // If the user is confirmed immediately (auto-confirm enabled), refresh profile
+        if (authData.user.email_confirmed_at) {
+          setTimeout(() => {
+            refreshProfile();
+          }, 100);
+        }
+
         toast({
           title: "Account Created!",
-          description: "Your account has been created successfully. You can now sign in.",
+          description: authData.user.email_confirmed_at 
+            ? "Your account has been created successfully and you are now signed in!"
+            : "Your account has been created successfully. Please check your email to confirm your account.",
         });
       }
     } catch (error) {
