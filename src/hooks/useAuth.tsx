@@ -47,7 +47,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   const refreshProfile = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('No user found, clearing profile');
+      setProfile(null);
+      return;
+    }
     
     console.log('Refreshing profile for user:', user.id);
     
@@ -60,6 +64,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) {
         console.error('Error fetching profile:', error);
+        toast({
+          variant: "destructive",
+          title: "Profile Loading Error",
+          description: error.message,
+        });
         return;
       }
 
@@ -67,6 +76,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setProfile(data ?? null);
     } catch (error) {
       console.error('Error refreshing profile:', error);
+      toast({
+        variant: "destructive",
+        title: "Profile Loading Error",
+        description: "Failed to load user profile",
+      });
     }
   };
 
@@ -200,16 +214,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+    
     // Listen for auth changes FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+      
+      console.log('Auth state change:', event, session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
         // Defer any Supabase calls to avoid deadlocks
         setTimeout(() => {
-          refreshProfile();
-        }, 0);
+          if (isMounted) refreshProfile();
+        }, 100);
       } else {
         setProfile(null);
       }
@@ -218,18 +237,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        refreshProfile();
-      } else {
-        setProfile(null);
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+        
+        console.log('Initial session check:', session?.user?.id);
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await refreshProfile();
+        } else {
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        if (isMounted) setLoading(false);
       }
-      setLoading(false);
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    initializeAuth();
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const value = {

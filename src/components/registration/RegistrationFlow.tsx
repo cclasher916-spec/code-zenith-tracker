@@ -67,19 +67,25 @@ const RegistrationFlow = ({ isOpen, onClose }: RegistrationFlowProps) => {
   // Load departments and sections
   useEffect(() => {
     const loadData = async () => {
-      const { data: deptData } = await supabase
-        .from('departments')
-        .select('*')
-        .order('name');
-      
-      if (deptData) setDepartments(deptData);
-
-      const { data: sectionData } = await supabase
-        .from('sections')
-        .select('*')
-        .order('name');
-      
-      if (sectionData) setSections(sectionData);
+      try {
+        const { data: deptData, error } = await supabase
+          .from('departments')
+          .select('*')
+          .order('name');
+        
+        if (error) {
+          console.error('Error loading departments:', error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to load departments. Please refresh the page.",
+          });
+        } else {
+          setDepartments(deptData || []);
+        }
+      } catch (error) {
+        console.error('Error loading departments:', error);
+      }
     };
 
     if (isOpen) {
@@ -88,6 +94,33 @@ const RegistrationFlow = ({ isOpen, onClose }: RegistrationFlowProps) => {
   }, [isOpen]);
 
   const filteredSections = sections.filter(section => section.department_id === departmentId);
+
+  const handleDepartmentChange = async (value: string) => {
+    setDepartmentId(value);
+    setSectionId(''); // Reset section when department changes
+    
+    // Load sections for the selected department
+    try {
+      const { data, error } = await supabase
+        .from('sections')
+        .select('*')
+        .eq('department_id', value)
+        .order('name');
+      
+      if (error) {
+        console.error('Error loading sections:', error);
+        toast({
+          variant: "destructive", 
+          title: "Error",
+          description: "Failed to load sections for selected department.",
+        });
+      } else {
+        setSections(data || []);
+      }
+    } catch (error) {
+      console.error('Error loading sections:', error);
+    }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -368,7 +401,7 @@ const RegistrationFlow = ({ isOpen, onClose }: RegistrationFlowProps) => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Department *</Label>
-                    <Select value={departmentId} onValueChange={setDepartmentId}>
+                    <Select value={departmentId} onValueChange={handleDepartmentChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select department" />
                       </SelectTrigger>
