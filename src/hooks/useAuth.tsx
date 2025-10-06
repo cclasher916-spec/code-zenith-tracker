@@ -46,20 +46,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const refreshProfile = async () => {
-    if (!user) {
-      console.log('No user found, clearing profile');
+  const refreshProfile = async (userId?: string) => {
+    const targetUserId = userId || user?.id;
+    
+    if (!targetUserId) {
+      console.log('No user ID provided, clearing profile');
       setProfile(null);
       return;
     }
     
-    console.log('Refreshing profile for user:', user.id);
+    console.log('Refreshing profile for user:', targetUserId);
     
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', targetUserId)
         .maybeSingle();
 
       if (error) {
@@ -170,7 +172,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // If the user is confirmed immediately (auto-confirm enabled), refresh profile
         if (authData.user.email_confirmed_at) {
           setTimeout(() => {
-            refreshProfile();
+            refreshProfile(authData.user.id);
           }, 100);
         }
 
@@ -227,7 +229,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (session?.user) {
         // Defer any Supabase calls to avoid deadlocks
         setTimeout(() => {
-          if (isMounted) refreshProfile();
+          if (isMounted) refreshProfile(session.user.id);
         }, 100);
       } else {
         setProfile(null);
@@ -247,7 +249,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await refreshProfile();
+          await refreshProfile(session.user.id);
         } else {
           setProfile(null);
         }
