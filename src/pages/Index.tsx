@@ -66,31 +66,24 @@ const Index = () => {
     );
   }
 
-  if (selectedRole) {
-    return (
-      <>
-        <RoleDashboard 
-          role={selectedRole} 
-          onBack={handleBackToHome} 
-          isDemo={!user || !profile || selectedRole !== profile?.role}
-        />
-        <Toaster />
-        <RegistrationFlow 
-          isOpen={showAuthModal} 
-          onClose={() => setShowAuthModal(false)} 
-        />
-      </>
-    );
-  }
-
   return (
     <>
       <div className="min-h-screen bg-background">
-        {/* Header */}
+        {/* Header - Always visible */}
         <Header 
           onRoleSelect={handleRoleSelect} 
           onAuthModal={() => setShowAuthModal(true)}
         />
+
+        {/* Render Dashboard or Landing Page */}
+        {selectedRole ? (
+          <RoleDashboard 
+            role={selectedRole} 
+            onBack={handleBackToHome} 
+            isDemo={!user || !profile || selectedRole !== profile?.role}
+          />
+        ) : (
+          <>
 
         {/* Hero Section */}
         <HeroSection onGetStarted={handleGetStarted} />
@@ -267,6 +260,8 @@ const Index = () => {
             </p>
           </div>
         </footer>
+        </>
+        )}
       </div>
       
       <RegistrationFlow 
