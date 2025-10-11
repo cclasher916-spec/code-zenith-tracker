@@ -16,6 +16,8 @@ export function PersonalInfoSection() {
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     phone: profile?.phone || '',
+    date_of_birth: (profile as any)?.date_of_birth || '',
+    gender: (profile as any)?.gender || '',
   });
 
   const handleSave = async () => {
@@ -28,6 +30,8 @@ export function PersonalInfoSection() {
         .update({
           full_name: formData.full_name,
           phone: formData.phone,
+          date_of_birth: formData.date_of_birth || null,
+          gender: formData.gender || null,
         })
         .eq('user_id', profile.user_id);
 
@@ -54,6 +58,8 @@ export function PersonalInfoSection() {
     setFormData({
       full_name: profile?.full_name || '',
       phone: profile?.phone || '',
+      date_of_birth: (profile as any)?.date_of_birth || '',
+      gender: (profile as any)?.gender || '',
     });
     setEditing(false);
   };
@@ -92,11 +98,40 @@ export function PersonalInfoSection() {
             <Label htmlFor="phone">Phone Number</Label>
             <Input
               id="phone"
+              type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               disabled={!editing}
-              placeholder="Optional"
+              placeholder="+91 XXXXX XXXXX"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="date_of_birth">Date of Birth</Label>
+            <Input
+              id="date_of_birth"
+              type="date"
+              value={formData.date_of_birth}
+              onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
+              disabled={!editing}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="gender">Gender</Label>
+            <select
+              id="gender"
+              value={formData.gender}
+              onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+              disabled={!editing}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+              <option value="Prefer not to say">Prefer not to say</option>
+            </select>
           </div>
 
           {profile.roll_number && (

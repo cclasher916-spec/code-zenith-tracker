@@ -3,32 +3,43 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { User, Settings, Shield, Users, Trophy, BarChart3, Bell, Code, BookOpen, Briefcase, Award, FileText, HelpCircle } from "lucide-react";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { PersonalInfoSection } from "@/components/profile/PersonalInfoSection";
 import { AcademicInfoSection } from "@/components/profile/AcademicInfoSection";
+import { AboutSection } from "@/components/profile/AboutSection";
 import { PlatformProfilesSection } from "@/components/profile/PlatformProfilesSection";
 import { StatsSection } from "@/components/profile/StatsSection";
 import { TeamInfoSection } from "@/components/profile/TeamInfoSection";
 import { NotificationsSection } from "@/components/profile/NotificationsSection";
 import { SkillsSection } from "@/components/profile/SkillsSection";
+import { ExperienceSection } from "@/components/profile/ExperienceSection";
+import { EducationSection } from "@/components/profile/EducationSection";
+import { AchievementsSection } from "@/components/profile/AchievementsSection";
+import { ActivityTimelineSection } from "@/components/profile/ActivityTimelineSection";
 
-type ProfileSection = 'personal' | 'academic' | 'platforms' | 'stats' | 'teams' | 'notifications' | 'skills';
+type ProfileSection = 'personal' | 'about' | 'academic' | 'platforms' | 'stats' | 'teams' | 'notifications' | 'skills' | 'experience' | 'education' | 'achievements' | 'activity';
 
 const roleBasedSections: Record<string, ProfileSection[]> = {
-  student: ['personal', 'academic', 'platforms', 'stats', 'teams', 'notifications', 'skills'],
-  team_lead: ['personal', 'academic', 'platforms', 'stats', 'teams', 'notifications', 'skills'],
-  advisor: ['personal', 'academic', 'teams', 'notifications', 'stats'],
-  hod: ['personal', 'academic', 'notifications', 'stats'],
+  student: ['personal', 'about', 'academic', 'platforms', 'skills', 'stats', 'teams', 'achievements', 'activity', 'notifications'],
+  team_lead: ['personal', 'about', 'academic', 'platforms', 'skills', 'experience', 'education', 'stats', 'teams', 'achievements', 'activity', 'notifications'],
+  advisor: ['personal', 'about', 'academic', 'teams', 'notifications', 'stats'],
+  hod: ['personal', 'about', 'academic', 'notifications', 'stats'],
   admin: ['personal', 'notifications', 'stats'],
 };
 
 const sectionConfig = {
   personal: { icon: User, label: 'Personal Info' },
+  about: { icon: FileText, label: 'About Me' },
   academic: { icon: BookOpen, label: 'Academic Details' },
   platforms: { icon: Code, label: 'Coding Platforms' },
+  skills: { icon: Trophy, label: 'Skills' },
+  experience: { icon: Briefcase, label: 'Experience' },
+  education: { icon: BookOpen, label: 'Education' },
   stats: { icon: BarChart3, label: 'My Stats' },
   teams: { icon: Users, label: 'Teams' },
+  achievements: { icon: Award, label: 'Achievements' },
+  activity: { icon: Award, label: 'Activity' },
   notifications: { icon: Bell, label: 'Notifications' },
-  skills: { icon: Trophy, label: 'Skills' },
 };
 
 export default function Profile() {
@@ -64,18 +75,28 @@ export default function Profile() {
     switch (activeSection) {
       case 'personal':
         return <PersonalInfoSection />;
+      case 'about':
+        return <AboutSection />;
       case 'academic':
         return <AcademicInfoSection />;
       case 'platforms':
         return <PlatformProfilesSection />;
+      case 'skills':
+        return <SkillsSection />;
+      case 'experience':
+        return <ExperienceSection />;
+      case 'education':
+        return <EducationSection />;
       case 'stats':
         return <StatsSection />;
       case 'teams':
         return <TeamInfoSection />;
+      case 'achievements':
+        return <AchievementsSection />;
+      case 'activity':
+        return <ActivityTimelineSection />;
       case 'notifications':
         return <NotificationsSection />;
-      case 'skills':
-        return <SkillsSection />;
       default:
         return <PersonalInfoSection />;
     }
@@ -147,15 +168,8 @@ export default function Profile() {
         </Sidebar>
 
         <main className="flex-1 p-6 overflow-auto">
-          <header className="mb-6 flex items-center">
-            <SidebarTrigger className="mr-4" />
-            <div>
-              <h1 className="text-3xl font-bold">Profile</h1>
-              <p className="text-muted-foreground">Manage your account and preferences</p>
-            </div>
-          </header>
-
-          <div className="max-w-4xl">
+          <div className="max-w-5xl mx-auto space-y-6">
+            <ProfileHeader />
             {renderSection()}
           </div>
         </main>

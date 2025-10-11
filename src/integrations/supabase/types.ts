@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          badge_name: string
+          category: string
+          description: string | null
+          earned_at: string
+          icon: string | null
+          id: string
+          is_locked: boolean
+          user_id: string
+        }
+        Insert: {
+          badge_name: string
+          category: string
+          description?: string | null
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          is_locked?: boolean
+          user_id: string
+        }
+        Update: {
+          badge_name?: string
+          category?: string
+          description?: string | null
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          is_locked?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      activity_log: {
+        Row: {
+          activity_type: string
+          created_at: string
+          id: string
+          message: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_actions: {
         Row: {
           action_type: string
@@ -181,6 +241,90 @@ export type Database = {
         }
         Relationships: []
       }
+      education: {
+        Row: {
+          achievements: string | null
+          created_at: string
+          degree: string
+          end_year: number | null
+          field: string | null
+          id: string
+          institution: string
+          percentage_cgpa: number | null
+          start_year: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achievements?: string | null
+          created_at?: string
+          degree: string
+          end_year?: number | null
+          field?: string | null
+          id?: string
+          institution: string
+          percentage_cgpa?: number | null
+          start_year: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achievements?: string | null
+          created_at?: string
+          degree?: string
+          end_year?: number | null
+          field?: string | null
+          id?: string
+          institution?: string
+          percentage_cgpa?: number | null
+          start_year?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      experience: {
+        Row: {
+          company: string
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          is_current: boolean
+          position: string
+          skills_used: string[] | null
+          start_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_current?: boolean
+          position: string
+          skills_used?: string[] | null
+          start_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_current?: boolean
+          position?: string
+          skills_used?: string[] | null
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -267,48 +411,63 @@ export type Database = {
         Row: {
           academic_year: string | null
           avatar_url: string | null
+          bio: string | null
+          cgpa: number | null
           created_at: string
+          date_of_birth: string | null
           department_id: string | null
           email: string
           full_name: string
+          gender: string | null
           id: string
           is_active: boolean
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           roll_number: string | null
           section_id: string | null
+          semester: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           academic_year?: string | null
           avatar_url?: string | null
+          bio?: string | null
+          cgpa?: number | null
           created_at?: string
+          date_of_birth?: string | null
           department_id?: string | null
           email: string
           full_name: string
+          gender?: string | null
           id?: string
           is_active?: boolean
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           roll_number?: string | null
           section_id?: string | null
+          semester?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           academic_year?: string | null
           avatar_url?: string | null
+          bio?: string | null
+          cgpa?: number | null
           created_at?: string
+          date_of_birth?: string | null
           department_id?: string | null
           email?: string
           full_name?: string
+          gender?: string | null
           id?: string
           is_active?: boolean
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           roll_number?: string | null
           section_id?: string | null
+          semester?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -369,6 +528,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      skills: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          level: string | null
+          name: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          level?: string | null
+          name: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          level?: string | null
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       system_settings: {
         Row: {
