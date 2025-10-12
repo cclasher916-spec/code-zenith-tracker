@@ -25,6 +25,12 @@ const Index = () => {
   }, [loading, user, profile, selectedRole]);
 
   const handleRoleSelect = (role: string) => {
+    // Empty string means go back to landing page
+    if (role === '') {
+      setSelectedRole(null);
+      return;
+    }
+    
     if (user && profile) {
       // Authenticated users can only access their actual role or view demos
       if (role === profile.role) {

@@ -753,6 +753,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      user_is_in_same_team: {
+        Args: { _target_user_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       approval_status: "pending" | "approved" | "rejected"

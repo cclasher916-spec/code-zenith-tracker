@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -23,7 +24,14 @@ interface HeaderProps {
 
 const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
   const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  const handleLogoClick = () => {
+    // Navigate to home and clear any selected role
+    navigate('/');
+    onRoleSelect(''); // This will trigger the parent to show landing page
+  };
 
   const roles = [
     { id: 'student', label: 'Student', icon: Code2, color: 'text-blue-600' },
@@ -47,8 +55,8 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-center space-x-3">
+        {/* Logo - Clickable to return to landing page */}
+        <button onClick={handleLogoClick} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
           <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
             <Code2 className="w-6 h-6 text-white" />
           </div>
@@ -56,7 +64,7 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
             <h1 className="text-xl font-space-grotesk font-bold">MVIT Coding Tracker</h1>
             <p className="text-xs text-muted-foreground">Performance Analytics Platform</p>
           </div>
-        </div>
+        </button>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-4">
@@ -93,11 +101,11 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
                     </div>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>
