@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,8 @@ interface RegistrationFlowProps {
 }
 
 const RegistrationFlow = ({ isOpen, onClose }: RegistrationFlowProps) => {
-  const { signIn, loading } = useAuth();
+  const { signIn, loading, profile } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("signin");
   const [showMultiStep, setShowMultiStep] = useState(false);
   
@@ -29,6 +31,13 @@ const RegistrationFlow = ({ isOpen, onClose }: RegistrationFlowProps) => {
       await signIn(email, password);
       onClose();
       resetForm();
+      // Navigate to dashboard after successful sign-in
+      // Give a small delay to ensure profile is loaded
+      setTimeout(() => {
+        if (profile?.role) {
+          navigate(`/dashboard/${profile.role}`);
+        }
+      }, 500);
     } catch (error) {
       // Error handled in useAuth
     }

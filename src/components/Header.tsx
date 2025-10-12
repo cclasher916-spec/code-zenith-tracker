@@ -28,9 +28,8 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const handleLogoClick = () => {
-    // Navigate to home and clear any selected role
+    // Navigate to home
     navigate('/');
-    onRoleSelect(''); // This will trigger the parent to show landing page
   };
 
   const roles = [
@@ -71,6 +70,14 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
           {user && profile ? (
             // Authenticated user menu
             <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogoClick}
+                className="flex items-center space-x-2"
+              >
+                <span>Home</span>
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -181,12 +188,33 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
                 className="w-full justify-start" 
                 variant="ghost"
                 onClick={() => {
+                  navigate('/');
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                Home
+              </Button>
+              <Button 
+                className="w-full justify-start" 
+                variant="ghost"
+                onClick={() => {
                   onRoleSelect(profile.role);
                   setIsMobileMenuOpen(false);
                 }}
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Dashboard
+              </Button>
+              <Button 
+                className="w-full justify-start" 
+                variant="ghost"
+                onClick={() => {
+                  navigate('/profile');
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                <User className="w-4 h-4 mr-2" />
+                Profile
               </Button>
               <Button 
                 className="w-full justify-start" 

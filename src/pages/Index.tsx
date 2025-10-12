@@ -1,62 +1,36 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
-import RoleDashboard from "@/components/RoleDashboard";
 import RegistrationFlow from "@/components/registration/RegistrationFlow";
 import CreateAdminDialog from "@/components/admin/CreateAdminDialog";
 import { Code2, Users, Trophy, BarChart3, Settings, Shield } from "lucide-react";
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
 
-  // Auto-open the correct dashboard after login/registration
-  // If the user just authenticated, show their role dashboard automatically
-  useEffect(() => {
-    if (!loading && user && profile && !selectedRole) {
-      setSelectedRole(profile.role);
-    }
-  }, [loading, user, profile, selectedRole]);
-
   const handleRoleSelect = (role: string) => {
-    // Empty string means go back to landing page
-    if (role === '') {
-      setSelectedRole(null);
-      return;
-    }
-    
-    if (user && profile) {
-      // Authenticated users can only access their actual role or view demos
-      if (role === profile.role) {
-        setSelectedRole(role);
-      } else {
-        // Show demo dashboard for other roles
-        setSelectedRole(role);
-      }
-    } else {
-      // Non-authenticated users see demo dashboards
-      setSelectedRole(role);
+    // Navigate to dashboard route
+    if (role && role !== '') {
+      navigate(`/dashboard/${role}`);
     }
   };
 
   const handleGetStarted = () => {
     if (user && profile) {
       // Redirect authenticated users to their dashboard
-      setSelectedRole(profile.role);
+      navigate(`/dashboard/${profile.role}`);
     } else {
       // Show auth modal for non-authenticated users
       setShowAuthModal(true);
     }
-  };
-
-  const handleBackToHome = () => {
-    setSelectedRole(null);
   };
 
   if (loading) {
@@ -80,16 +54,6 @@ const Index = () => {
           onRoleSelect={handleRoleSelect} 
           onAuthModal={() => setShowAuthModal(true)}
         />
-
-        {/* Render Dashboard or Landing Page */}
-        {selectedRole ? (
-          <RoleDashboard 
-            role={selectedRole} 
-            onBack={handleBackToHome} 
-            isDemo={!user || !profile || selectedRole !== profile?.role}
-          />
-        ) : (
-          <>
 
         {/* Hero Section */}
         <HeroSection onGetStarted={handleGetStarted} />
@@ -266,8 +230,6 @@ const Index = () => {
             </p>
           </div>
         </footer>
-        </>
-        )}
       </div>
       
       <RegistrationFlow 

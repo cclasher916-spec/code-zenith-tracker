@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -66,6 +67,7 @@ const initialAgreements = {
 export const MultiStepRegistration = ({ isOpen, onClose }: MultiStepRegistrationProps) => {
   const { signUp, loading } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedRole, setSelectedRole] = useState('student');
@@ -190,6 +192,11 @@ export const MultiStepRegistration = ({ isOpen, onClose }: MultiStepRegistration
 
       resetForm();
       onClose();
+      
+      // Navigate to dashboard after successful registration
+      setTimeout(() => {
+        navigate(`/dashboard/${selectedRole}`);
+      }, 500);
     } catch (error) {
       console.error('Registration error:', error);
     }
