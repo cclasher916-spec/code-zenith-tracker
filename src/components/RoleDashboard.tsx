@@ -435,39 +435,41 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
   return (
     <div className="min-h-screen bg-background pt-20 pb-12">
       <div className="container mx-auto px-4">
-        {/* Enhanced Header */}
+        {/* Enhanced Header - Mobile Optimized */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4"
+          className="mb-8"
         >
-          <div className="flex items-center space-x-4">
+          {/* Top Row: Back Button and Title */}
+          <div className="flex items-start gap-3 mb-4">
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={() => navigate('/')}
-              className="hover:scale-105 transition-transform"
+              className="hover:scale-105 transition-transform shrink-0"
             >
-              <Home className="w-4 h-4 mr-2" />
-              Home
+              <Home className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">Home</span>
             </Button>
-            <div>
-              <h1 className={`text-3xl font-space-grotesk font-bold ${config.color}`}>
+            <div className="flex-1 min-w-0">
+              <h1 className={`text-xl sm:text-2xl md:text-3xl font-space-grotesk font-bold ${config.color} truncate`}>
                 {config.title}
               </h1>
-              <p className="text-muted-foreground">{config.subtitle}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">{config.subtitle}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Date Range Filter */}
-            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+          {/* Bottom Row: Actions */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            {/* Date Range Filter - Full width on mobile */}
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted w-full sm:w-auto">
               <Button 
                 variant={dateRange === 'today' ? 'default' : 'ghost'} 
                 size="sm"
                 onClick={() => setDateRange('today')}
-                className="text-xs"
+                className="text-xs flex-1 sm:flex-initial"
               >
                 Today
               </Button>
@@ -475,7 +477,7 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
                 variant={dateRange === 'week' ? 'default' : 'ghost'} 
                 size="sm"
                 onClick={() => setDateRange('week')}
-                className="text-xs"
+                className="text-xs flex-1 sm:flex-initial"
               >
                 Week
               </Button>
@@ -483,28 +485,32 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
                 variant={dateRange === 'month' ? 'default' : 'ghost'} 
                 size="sm"
                 onClick={() => setDateRange('month')}
-                className="text-xs"
+                className="text-xs flex-1 sm:flex-initial"
               >
                 Month
               </Button>
             </div>
 
-            <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">
-              <Bell className="w-4 h-4 mr-2" />
-              Alerts
-            </Button>
-            <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleLogout}
-              className="hover:scale-105 transition-transform hover:bg-destructive hover:text-destructive-foreground"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
+            {/* Action Buttons - Responsive */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button variant="outline" size="sm" className="hover:scale-105 transition-transform flex-1 sm:flex-initial">
+                <Bell className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Alerts</span>
+              </Button>
+              <Button variant="outline" size="sm" className="hover:scale-105 transition-transform flex-1 sm:flex-initial">
+                <Download className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Export</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleLogout}
+                className="hover:scale-105 transition-transform hover:bg-destructive hover:text-destructive-foreground flex-1 sm:flex-initial"
+              >
+                <LogOut className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Logout</span>
+              </Button>
+            </div>
           </div>
         </motion.div>
 
@@ -542,9 +548,9 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
           </Badge>
         </motion.div>
 
-        {/* Stats Cards with Animation */}
+        {/* Stats Cards with Animation - Mobile Responsive Grid */}
         <motion.div 
-          className="dashboard-grid mb-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
@@ -560,27 +566,27 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
           className="mb-8"
         >
           {role === 'student' && (
-            <div className="grid lg:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
               <Card className="border-t-4" style={{ borderTopColor: config.accentColor }}>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Activity className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+                  <CardTitle className="flex items-center text-sm sm:text-base">
+                    <Activity className="w-4 h-4 sm:w-5 sm:h-5 mr-2" style={{ color: config.accentColor }} />
                     Weekly Performance Trend
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 sm:p-6">
                   <StudentPerformanceChart color={config.accentColor} />
                 </CardContent>
               </Card>
 
               <Card className="border-t-4" style={{ borderTopColor: config.accentColor }}>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Target className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+                  <CardTitle className="flex items-center text-sm sm:text-base">
+                    <Target className="w-4 h-4 sm:w-5 sm:h-5 mr-2" style={{ color: config.accentColor }} />
                     Problem Difficulty Distribution
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 sm:p-6">
                   <StudentDifficultyRadar color={config.accentColor} />
                 </CardContent>
               </Card>
@@ -588,15 +594,15 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
           )}
 
           {role === 'team_lead' && (
-            <div className="grid lg:grid-cols-1 gap-6 mb-8">
+            <div className="mb-8">
               <Card className="border-t-4" style={{ borderTopColor: config.accentColor }}>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Users className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+                  <CardTitle className="flex items-center text-sm sm:text-base">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 mr-2" style={{ color: config.accentColor }} />
                     Team Member Performance
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 sm:p-6">
                   <TeamMemberBarChart color={config.accentColor} />
                 </CardContent>
               </Card>
@@ -604,15 +610,15 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
           )}
 
           {role === 'advisor' && (
-            <div className="grid lg:grid-cols-1 gap-6 mb-8">
+            <div className="mb-8">
               <Card className="border-t-4" style={{ borderTopColor: config.accentColor }}>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Trophy className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+                  <CardTitle className="flex items-center text-sm sm:text-base">
+                    <Trophy className="w-4 h-4 sm:w-5 sm:h-5 mr-2" style={{ color: config.accentColor }} />
                     Section Leaderboard - Top 5 Students
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 sm:p-6">
                   <SectionLeaderboardChart color={config.accentColor} />
                 </CardContent>
               </Card>
@@ -620,15 +626,15 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
           )}
 
           {role === 'hod' && (
-            <div className="grid lg:grid-cols-1 gap-6 mb-8">
+            <div className="mb-8">
               <Card className="border-t-4" style={{ borderTopColor: config.accentColor }}>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <BarChart3 className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+                  <CardTitle className="flex items-center text-sm sm:text-base">
+                    <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 mr-2" style={{ color: config.accentColor }} />
                     Department Performance Over Time
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 sm:p-6">
                   <DepartmentTrendChart color={config.accentColor} />
                 </CardContent>
               </Card>
@@ -636,36 +642,36 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
           )}
 
           {role === 'admin' && (
-            <div className="grid lg:grid-cols-1 gap-6 mb-8">
+            <div className="mb-8">
               <Card className="border-t-4" style={{ borderTopColor: config.accentColor }}>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Users className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+                  <CardTitle className="flex items-center text-sm sm:text-base">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 mr-2" style={{ color: config.accentColor }} />
                     User Role Distribution
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 sm:p-6">
                   <UserDistributionChart color={config.accentColor} />
                 </CardContent>
               </Card>
             </div>
           )}
         </motion.div>
-        {/* Recent Activity and Performance Overview */}
+        {/* Recent Activity and Performance Overview - Mobile Responsive */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.7 }}
-          className="grid lg:grid-cols-2 gap-8"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8"
         >
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Calendar className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+              <CardTitle className="flex items-center text-sm sm:text-base">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" style={{ color: config.accentColor }} />
                 Recent Activity
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-6">
               <div className="space-y-3">
                 {[
                   { time: "2 hours ago", event: isDemo ? "Demo: Daily data sync completed" : "Daily scraping completed", status: "success" },
@@ -697,12 +703,12 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
 
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Target className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+              <CardTitle className="flex items-center text-sm sm:text-base">
+                <Target className="w-4 h-4 sm:w-5 sm:h-5 mr-2" style={{ color: config.accentColor }} />
                 Performance Overview
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-6">
               <div className="space-y-6">
                 {[
                   { label: "Monthly Goal Progress", value: 78 },
