@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +21,42 @@ import {
   Settings,
   Download,
   AlertCircle,
-  Shield
+  Shield,
+  Home,
+  LogOut,
+  Activity,
+  BarChart3,
+  TrendingUpIcon
 } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Area,
+  AreaChart
+} from "recharts";
+import { 
+  StudentPerformanceChart, 
+  StudentDifficultyRadar, 
+  TeamMemberBarChart, 
+  SectionLeaderboardChart, 
+  DepartmentTrendChart,
+  UserDistributionChart 
+} from "@/components/dashboard/RoleCharts";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface RoleDashboardProps {
   role: string;
@@ -28,39 +65,56 @@ interface RoleDashboardProps {
 }
 
 const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const { stats, loading, error } = useDashboardData(role);
+  const [dateRange, setDateRange] = useState<'today' | 'week' | 'month'>('week');
 
   const roleConfigs = {
     student: {
       title: "Student Dashboard",
       subtitle: "Track your coding progress and performance",
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      color: "text-[hsl(212,85%,45%)]",
+      bgColor: "bg-[hsl(212,85%,45%)]/10",
+      accentColor: "hsl(212, 85%, 45%)",
     },
     team_lead: {
       title: "Team Leader Dashboard", 
       subtitle: "Manage and monitor your team's performance",
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
+      color: "text-[hsl(270,85%,60%)]",
+      bgColor: "bg-[hsl(270,85%,60%)]/10",
+      accentColor: "hsl(270, 85%, 60%)",
     },
     advisor: {
       title: "Class Advisor Dashboard",
       subtitle: "Monitor section performance and guide students",
-      color: "text-green-600",
-      bgColor: "bg-green-100",
+      color: "text-[hsl(142,76%,36%)]",
+      bgColor: "bg-[hsl(142,76%,36%)]/10",
+      accentColor: "hsl(142, 76%, 36%)",
     },
     hod: {
       title: "Head of Department",
       subtitle: "Department-wide analytics and strategic oversight",
-      color: "text-amber-600",
-      bgColor: "bg-amber-100",
+      color: "text-[hsl(38,92%,50%)]",
+      bgColor: "bg-[hsl(38,92%,50%)]/10",
+      accentColor: "hsl(38, 92%, 50%)",
     },
     admin: {
       title: "System Administrator",
       subtitle: "Platform management and system oversight",
-      color: "text-red-600",
-      bgColor: "bg-red-100",
+      color: "text-[hsl(0,84%,60%)]",
+      bgColor: "bg-[hsl(0,84%,60%)]/10",
+      accentColor: "hsl(0, 84%, 60%)",
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Logged out successfully");
+      navigate('/');
+    } catch (error) {
+      toast.error("Failed to logout");
     }
   };
 
@@ -127,22 +181,22 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
             color: "text-blue-600"
           }
         ].map((card, index) => (
-          <Card key={card.title} className="stats-card animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+          <Card key={card.title} className="stats-card hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-l-4" style={{ borderLeftColor: config.accentColor }}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
                 {card.title}
+                {card.trend === 'up' ? (
+                  <TrendingUp className="w-4 h-4 text-success" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-warning" />
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-space-grotesk font-bold mb-1">
+              <div className="text-3xl font-space-grotesk font-bold mb-2" style={{ color: config.accentColor }}>
                 {card.value}
               </div>
               <div className={`text-sm flex items-center ${card.color}`}>
-                {card.trend === 'up' ? (
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                ) : (
-                  <TrendingDown className="w-3 h-3 mr-1" />
-                )}
                 {card.change}
               </div>
             </CardContent>
@@ -183,22 +237,22 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
             color: "text-blue-600"
           }
         ].map((card, index) => (
-          <Card key={card.title} className="stats-card animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+          <Card key={card.title} className="stats-card hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-l-4" style={{ borderLeftColor: config.accentColor }}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
                 {card.title}
+                {card.trend === 'up' ? (
+                  <TrendingUp className="w-4 h-4 text-success" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-warning" />
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-space-grotesk font-bold mb-1">
+              <div className="text-3xl font-space-grotesk font-bold mb-2" style={{ color: config.accentColor }}>
                 {card.value}
               </div>
               <div className={`text-sm flex items-center ${card.color}`}>
-                {card.trend === 'up' ? (
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                ) : (
-                  <TrendingDown className="w-3 h-3 mr-1" />
-                )}
                 {card.change}
               </div>
             </CardContent>
@@ -239,22 +293,22 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
             color: sectionStats.needAttention === 0 ? "text-green-600" : "text-orange-600"
           }
         ].map((card, index) => (
-          <Card key={card.title} className="stats-card animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+          <Card key={card.title} className="stats-card hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-l-4" style={{ borderLeftColor: config.accentColor }}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
                 {card.title}
+                {card.trend === 'up' ? (
+                  <TrendingUp className="w-4 h-4 text-success" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-warning" />
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-space-grotesk font-bold mb-1">
+              <div className="text-3xl font-space-grotesk font-bold mb-2" style={{ color: config.accentColor }}>
                 {card.value}
               </div>
               <div className={`text-sm flex items-center ${card.color}`}>
-                {card.trend === 'up' ? (
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                ) : (
-                  <TrendingDown className="w-3 h-3 mr-1" />
-                )}
                 {card.change}
               </div>
             </CardContent>
@@ -295,22 +349,22 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
             color: "text-amber-600"
           }
         ].map((card, index) => (
-          <Card key={card.title} className="stats-card animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+          <Card key={card.title} className="stats-card hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-l-4" style={{ borderLeftColor: config.accentColor }}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
                 {card.title}
+                {card.trend === 'up' ? (
+                  <TrendingUp className="w-4 h-4 text-success" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-warning" />
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-space-grotesk font-bold mb-1">
+              <div className="text-3xl font-space-grotesk font-bold mb-2" style={{ color: config.accentColor }}>
                 {card.value}
               </div>
               <div className={`text-sm flex items-center ${card.color}`}>
-                {card.trend === 'up' ? (
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                ) : (
-                  <TrendingDown className="w-3 h-3 mr-1" />
-                )}
                 {card.change}
               </div>
             </CardContent>
@@ -351,22 +405,22 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
             color: "text-red-600"
           }
         ].map((card, index) => (
-          <Card key={card.title} className="stats-card animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+          <Card key={card.title} className="stats-card hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-l-4" style={{ borderLeftColor: config.accentColor }}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
                 {card.title}
+                {card.trend === 'up' ? (
+                  <TrendingUp className="w-4 h-4 text-success" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-warning" />
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-space-grotesk font-bold mb-1">
+              <div className="text-3xl font-space-grotesk font-bold mb-2" style={{ color: config.accentColor }}>
                 {card.value}
               </div>
               <div className={`text-sm flex items-center ${card.color}`}>
-                {card.trend === 'up' ? (
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                ) : (
-                  <TrendingDown className="w-3 h-3 mr-1" />
-                )}
                 {card.change}
               </div>
             </CardContent>
@@ -381,122 +435,299 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
   return (
     <div className="min-h-screen bg-background pt-20 pb-12">
       <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        {/* Enhanced Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4"
+        >
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={onBack}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/')}
+              className="hover:scale-105 transition-transform"
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Home
             </Button>
             <div>
-              <h1 className="text-3xl font-space-grotesk font-bold">{config.title}</h1>
+              <h1 className={`text-3xl font-space-grotesk font-bold ${config.color}`}>
+                {config.title}
+              </h1>
               <p className="text-muted-foreground">{config.subtitle}</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+          
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Date Range Filter */}
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+              <Button 
+                variant={dateRange === 'today' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setDateRange('today')}
+                className="text-xs"
+              >
+                Today
+              </Button>
+              <Button 
+                variant={dateRange === 'week' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setDateRange('week')}
+                className="text-xs"
+              >
+                Week
+              </Button>
+              <Button 
+                variant={dateRange === 'month' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setDateRange('month')}
+                className="text-xs"
+              >
+                Month
+              </Button>
+            </div>
+
+            <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">
               <Bell className="w-4 h-4 mr-2" />
               Alerts
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button variant="outline" size="sm">
-              <Settings className="w-4 h-4" />
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleLogout}
+              className="hover:scale-105 transition-transform hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <LogOut className="w-4 h-4" />
             </Button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Demo/Authentication Notice */}
         {isDemo && (
-          <Alert className="mb-8 border-primary/50 bg-primary/5">
-            <Shield className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Demo Mode:</strong> This is a demonstration of the {config.title.toLowerCase()}. 
-              {profile ? (
-                <>Sign in with a {role.replace('_', ' ')} account to access real data and full functionality.</>
-              ) : (
-                <>Sign in to access your actual dashboard with real data and personalized features.</>
-              )}
-            </AlertDescription>
-          </Alert>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
+            <Alert className={`mb-8 border-[${config.accentColor}]/30 ${config.bgColor}`}>
+              <Shield className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Demo Mode:</strong> This is a demonstration of the {config.title.toLowerCase()}. 
+                {profile ? (
+                  <>Sign in with a {role.replace('_', ' ')} account to access real data and full functionality.</>
+                ) : (
+                  <>Sign in to access your actual dashboard with real data and personalized features.</>
+                )}
+              </AlertDescription>
+            </Alert>
+          </motion.div>
         )}
 
         {/* Role Badge */}
-        <div className="mb-8">
-          <Badge className={`${config.bgColor} ${config.color} text-sm px-3 py-1`}>
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="mb-8"
+        >
+          <Badge className={`${config.bgColor} ${config.color} text-sm px-4 py-2 font-semibold`}>
+            <Code2 className="w-4 h-4 mr-2" />
             {role.charAt(0).toUpperCase() + role.slice(1).replace('_', ' ')} {isDemo ? 'Demo' : 'Access'}
           </Badge>
-        </div>
+        </motion.div>
 
-        {/* Stats Cards */}
-        <div className="dashboard-grid mb-8">
+        {/* Stats Cards with Animation */}
+        <motion.div 
+          className="dashboard-grid mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
           {getStatsCards()}
-        </div>
+        </motion.div>
 
+        {/* Role-Specific Charts and Analytics */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="mb-8"
+        >
+          {role === 'student' && (
+            <div className="grid lg:grid-cols-2 gap-6 mb-8">
+              <Card className="border-t-4" style={{ borderTopColor: config.accentColor }}>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Activity className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+                    Weekly Performance Trend
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <StudentPerformanceChart color={config.accentColor} />
+                </CardContent>
+              </Card>
+
+              <Card className="border-t-4" style={{ borderTopColor: config.accentColor }}>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Target className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+                    Problem Difficulty Distribution
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <StudentDifficultyRadar color={config.accentColor} />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {role === 'team_lead' && (
+            <div className="grid lg:grid-cols-1 gap-6 mb-8">
+              <Card className="border-t-4" style={{ borderTopColor: config.accentColor }}>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Users className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+                    Team Member Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TeamMemberBarChart color={config.accentColor} />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {role === 'advisor' && (
+            <div className="grid lg:grid-cols-1 gap-6 mb-8">
+              <Card className="border-t-4" style={{ borderTopColor: config.accentColor }}>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Trophy className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+                    Section Leaderboard - Top 5 Students
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <SectionLeaderboardChart color={config.accentColor} />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {role === 'hod' && (
+            <div className="grid lg:grid-cols-1 gap-6 mb-8">
+              <Card className="border-t-4" style={{ borderTopColor: config.accentColor }}>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <BarChart3 className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+                    Department Performance Over Time
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DepartmentTrendChart color={config.accentColor} />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {role === 'admin' && (
+            <div className="grid lg:grid-cols-1 gap-6 mb-8">
+              <Card className="border-t-4" style={{ borderTopColor: config.accentColor }}>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Users className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
+                    User Role Distribution
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <UserDistributionChart color={config.accentColor} />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </motion.div>
         {/* Recent Activity and Performance Overview */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          <Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+          className="grid lg:grid-cols-2 gap-8"
+        >
+          <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Calendar className="w-5 h-5 mr-2" />
+                <Calendar className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
                 Recent Activity
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {[
                   { time: "2 hours ago", event: isDemo ? "Demo: Daily data sync completed" : "Daily scraping completed", status: "success" },
                   { time: "4 hours ago", event: isDemo ? "Demo: Sample report generated" : "Performance report generated", status: "info" },
                   { time: "6 hours ago", event: isDemo ? "Demo: User activity simulated" : "New user registered", status: "success" },
                   { time: "1 day ago", event: isDemo ? "Demo: Weekly stats updated" : "Weekly analytics updated", status: "info" },
                 ].map((activity, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 rounded-lg bg-muted/30">
-                    <div className={`w-2 h-2 rounded-full ${
-                      activity.status === 'success' ? 'bg-success' : 'bg-info'
-                    }`}></div>
+                  <motion.div 
+                    key={index} 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.8 + index * 0.1 }}
+                    className="flex items-center space-x-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                  >
+                    <div 
+                      className={`w-2 h-2 rounded-full ${
+                        activity.status === 'success' ? 'bg-success' : 'bg-info'
+                      }`}
+                    ></div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">{activity.event}</p>
                       <p className="text-xs text-muted-foreground">{activity.time}</p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Target className="w-5 h-5 mr-2" />
+                <Target className="w-5 h-5 mr-2" style={{ color: config.accentColor }} />
                 Performance Overview
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>Monthly Goal Progress</span>
-                    <span className="font-medium">78%</span>
-                  </div>
-                  <Progress value={78} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>Platform Integration</span>
-                    <span className="font-medium">92%</span>
-                  </div>
-                  <Progress value={92} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>User Engagement</span>
-                    <span className="font-medium">85%</span>
-                  </div>
-                  <Progress value={85} className="h-2" />
-                </div>
-                <div className="pt-4 border-t border-border">
+                {[
+                  { label: "Monthly Goal Progress", value: 78 },
+                  { label: "Platform Integration", value: 92 },
+                  { label: "User Engagement", value: 85 },
+                ].map((metric, index) => (
+                  <motion.div 
+                    key={metric.label}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.8 + index * 0.1 }}
+                  >
+                    <div className="flex justify-between text-sm mb-2">
+                      <span>{metric.label}</span>
+                      <span className="font-medium">{metric.value}%</span>
+                    </div>
+                    <Progress value={metric.value} className="h-2" />
+                  </motion.div>
+                ))}
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 1.1 }}
+                  className="pt-4 border-t border-border"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Trophy className="w-4 h-4 text-warning" />
@@ -506,11 +737,11 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
                       {isDemo ? 'Demo' : 'Excellent'}
                     </Badge>
                   </div>
-                </div>
+                </motion.div>
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
