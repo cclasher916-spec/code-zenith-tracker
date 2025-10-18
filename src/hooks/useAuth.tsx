@@ -1,27 +1,30 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { User } from 'firebase/auth';
+import { authService, AuthUser } from '@/services/auth';
+import { dbService } from '@/services/database';
 import { useToast } from '@/hooks/use-toast';
+import { Timestamp } from 'firebase/firestore';
 
 interface Profile {
   id: string;
-  user_id: string;
+  uid: string; // Firebase UID
   email: string;
-  full_name: string;
-  roll_number?: string;
+  fullName: string;
+  rollNumber?: string;
   phone?: string;
-  department_id?: string;
-  section_id?: string;
+  departmentId?: string;
+  sectionId?: string;
   role: 'student' | 'team_lead' | 'advisor' | 'hod' | 'admin';
-  academic_year?: string;
-  is_active: boolean;
-  avatar_url?: string;
+  academicYear?: string;
+  isActive: boolean;
+  avatarUrl?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   profile: Profile | null;
-  session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData: Partial<Profile>) => Promise<void>;
@@ -40,14 +43,13 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const refreshProfile = async (userId?: string) => {
-    const targetUserId = userId || user?.id;
+    const targetUserId = userId || user?.uid;
     
     if (!targetUserId) {
       console.log('No user ID provided, clearing profile');
@@ -58,25 +60,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('Refreshing profile for user:', targetUserId);
     
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', targetUserId)
-        .maybeSingle();
+      // Query profiles collection where uid matches the Firebase user UID
+      const profiles = await dbService.query('profiles', {
+        where: [['uid', '==', targetUserId]],
+        limit: 1
+      });
 
-      if (error) {
-        console.error('Error fetching profile:', error);
-        toast({
-          variant: "destructive",
-          title: "Profile Loading Error",
-          description: error.message,
-        });
-        return;
-      }
-
-      console.log('Profile data retrieved:', data);
-      setProfile(data ?? null);
-    } catch (error) {
+      const profileData = profiles.length > 0 ? profiles[0] as Profile : null;
+      console.log('Profile data retrieved:', profileData);
+      setProfile(profileData);
+    } catch (error: any) {
       console.error('Error refreshing profile:', error);
       toast({
         variant: "destructive",
@@ -89,25 +82,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Sign In Failed",
-          description: error.message,
-        });
-        throw error;
-      }
-
+      await authService.signIn(email, password);
+      
       toast({
         title: "Welcome back!",
         description: "You have been signed in successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Sign In Failed",
+        description: error.message || "Failed to sign in",
+      });
       throw error;
     } finally {
       setLoading(false);
@@ -118,72 +104,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setLoading(true);
       
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`
-        }
-      });
+      // Create Firebase auth user
+      const userCredential = await authService.signUp(email, password, userData.fullName);
+      const firebaseUser = userCredential.user;
 
-      if (authError) {
-        toast({
-          variant: "destructive",
-          title: "Sign Up Failed",
-          description: authError.message,
-        });
-        throw authError;
-      }
+      if (firebaseUser) {
+        // Create profile document in Firestore
+        const profileData = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email!,
+          fullName: userData.fullName!,
+          rollNumber: userData.rollNumber,
+          phone: userData.phone,
+          departmentId: userData.departmentId,
+          sectionId: userData.sectionId,
+          role: userData.role || 'student',
+          academicYear: userData.academicYear,
+          isActive: true,
+          avatarUrl: userData.avatarUrl
+        };
 
-      if (authData.user) {
-        // Create profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: authData.user.id,
-            email: authData.user.email!,
-            full_name: userData.full_name!,
-            roll_number: userData.roll_number,
-            phone: userData.phone,
-            department_id: userData.department_id,
-            section_id: userData.section_id,
-            role: userData.role || 'student',
-            academic_year: userData.academic_year,
-          });
-
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-          toast({
-            variant: "destructive",
-            title: "Profile Creation Failed",
-            description: profileError.message,
-          });
-          throw profileError;
-        }
+        await dbService.create('profiles', profileData);
 
         // Create default user preferences
-        await supabase
-          .from('user_preferences')
-          .insert({
-            user_id: authData.user.id,
-          });
+        await dbService.create('userPreferences', {
+          uid: firebaseUser.uid,
+          theme: 'system',
+          notifications: {
+            email: true,
+            push: true,
+            taskAssigned: true,
+            taskCompleted: false,
+            projectUpdates: true
+          }
+        });
 
-        // If the user is confirmed immediately (auto-confirm enabled), refresh profile
-        if (authData.user.email_confirmed_at) {
-          setTimeout(() => {
-            refreshProfile(authData.user.id);
-          }, 100);
-        }
+        // Refresh profile after creation
+        setTimeout(() => {
+          refreshProfile(firebaseUser.uid);
+        }, 100);
 
         toast({
           title: "Account Created!",
-          description: authData.user.email_confirmed_at 
-            ? "Your account has been created successfully and you are now signed in!"
-            : "Your account has been created successfully. Please check your email to confirm your account.",
+          description: "Your account has been created successfully and you are now signed in!",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Sign Up Failed",
+        description: error.message || "Failed to create account",
+      });
       throw error;
     } finally {
       setLoading(false);
@@ -192,86 +163,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Sign Out Failed",
-          description: error.message,
-        });
-        throw error;
-      }
-
+      await authService.signOut();
       setUser(null);
       setProfile(null);
-      setSession(null);
       
       toast({
         title: "Signed Out",
         description: "You have been signed out successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing out:', error);
+      toast({
+        variant: "destructive",
+        title: "Sign Out Failed",
+        description: error.message || "Failed to sign out",
+      });
     }
   };
 
   useEffect(() => {
     let isMounted = true;
     
-    // Listen for auth changes FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Listen for Firebase auth state changes
+    const unsubscribe = authService.onAuthStateChange(async (firebaseUser: User | null) => {
       if (!isMounted) return;
       
-      console.log('Auth state change:', event, session?.user?.id);
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        // Defer any Supabase calls to avoid deadlocks
+      console.log('Auth state change:', firebaseUser?.uid);
+      
+      if (firebaseUser) {
+        const authUser = authService.formatUser(firebaseUser);
+        setUser(authUser);
+        
+        // Load user profile
         setTimeout(() => {
-          if (isMounted) refreshProfile(session.user.id);
+          if (isMounted) refreshProfile(firebaseUser.uid);
         }, 100);
       } else {
+        setUser(null);
         setProfile(null);
       }
 
       setLoading(false);
     });
 
-    // THEN check for existing session
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!isMounted) return;
-        
-        console.log('Initial session check:', session?.user?.id);
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          await refreshProfile(session.user.id);
-        } else {
-          setProfile(null);
-        }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    initializeAuth();
-
     return () => {
       isMounted = false;
-      subscription.unsubscribe();
+      unsubscribe();
     };
   }, []);
 
   const value = {
     user,
     profile,
-    session,
     loading,
     signIn,
     signUp,
