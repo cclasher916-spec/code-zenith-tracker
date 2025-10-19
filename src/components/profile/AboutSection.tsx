@@ -3,9 +3,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { dbService } from "@/services/database";
 
 export function AboutSection() {
   const { profile, refreshProfile } = useAuth();
@@ -28,12 +28,7 @@ export function AboutSection() {
 
     try {
       setSaving(true);
-      const { error } = await supabase
-        .from('profiles')
-        .update({ bio })
-        .eq('user_id', profile.user_id);
-
-      if (error) throw error;
+      await dbService.update('profiles', profile.id, { bio });
 
       await refreshProfile();
       setEditing(false);
