@@ -4,9 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Edit, ExternalLink, Download, Upload } from "lucide-react";
+import { dbService } from "@/services/database";
 
 const roleColors: Record<string, string> = {
   student: "bg-blue-500",
@@ -61,22 +61,23 @@ export function ProfileHeader() {
       const fileExt = file.name.split('.').pop();
       const fileName = `${profile.user_id}-${Date.now()}.${fileExt}`;
       
-      // Here you would upload to Supabase Storage
-      // For now, we'll create a local URL
+      // For now, store the image as base64 in Firestore (you may replace with Firebase Storage later)
       const reader = new FileReader();
       reader.onloadend = async () => {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ avatar_url: reader.result as string })
-          .eq('user_id', profile.user_id);
-
-        if (error) throw error;
-
-        await refreshProfile();
-        toast({
-          title: "Avatar Updated",
-          description: "Your profile picture has been updated successfully.",
-        });
+        try {
+          await dbService.update('profiles', profile.id, { avatar_url: reader.result as string });
+          await refreshProfile();
+          toast({
+            title: "Avatar Updated",
+            description: "Your profile picture has been updated successfully.",
+          });
+        } catch (err: any) {
+          toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: err.message,
+          });
+        }
       };
       reader.readAsDataURL(file);
     } catch (error: any) {
