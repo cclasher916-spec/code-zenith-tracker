@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { dbService } from "@/services/database";
 
 interface Department {
   id: string;
@@ -31,23 +31,13 @@ export function AcademicInfoSection() {
         setLoading(true);
 
         if (profile.department_id) {
-          const { data: deptData } = await supabase
-            .from('departments')
-            .select('*')
-            .eq('id', profile.department_id)
-            .single();
-          
-          if (deptData) setDepartment(deptData);
+          const dept = await dbService.read('departments', profile.department_id);
+          if (dept) setDepartment(dept as Department);
         }
 
         if (profile.section_id) {
-          const { data: sectionData } = await supabase
-            .from('sections')
-            .select('*')
-            .eq('id', profile.section_id)
-            .single();
-          
-          if (sectionData) setSection(sectionData);
+          const sec = await dbService.read('sections', profile.section_id);
+          if (sec) setSection(sec as Section);
         }
       } catch (error) {
         console.error('Error loading academic data:', error);
