@@ -55,8 +55,8 @@ import {
   DepartmentTrendChart,
   UserDistributionChart 
 } from "@/components/dashboard/RoleCharts";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { authService } from "@/services/auth";
 
 interface RoleDashboardProps {
   role: string;
@@ -110,7 +110,7 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      await authService.signOut();
       toast.success("Logged out successfully");
       navigate('/');
     } catch (error) {
