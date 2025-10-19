@@ -4,9 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { dbService } from "@/services/database";
 
 export function PersonalInfoSection() {
   const { profile, refreshProfile } = useAuth();
@@ -25,17 +25,12 @@ export function PersonalInfoSection() {
 
     try {
       setSaving(true);
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: formData.full_name,
-          phone: formData.phone,
-          date_of_birth: formData.date_of_birth || null,
-          gender: formData.gender || null,
-        })
-        .eq('user_id', profile.user_id);
-
-      if (error) throw error;
+      await dbService.update('profiles', profile.id, {
+        full_name: formData.full_name,
+        phone: formData.phone,
+        date_of_birth: formData.date_of_birth || null,
+        gender: formData.gender || null,
+      });
 
       await refreshProfile();
       setEditing(false);
