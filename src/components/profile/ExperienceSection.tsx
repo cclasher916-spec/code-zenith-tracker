@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Briefcase, Trash2, Edit } from "lucide-react";
 import { format } from "date-fns";
+import { dbService } from "@/services/database";
 
 interface Experience {
   id: string;
@@ -48,14 +48,11 @@ export function ExperienceSection() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('experience')
-        .select('*')
-        .eq('user_id', profile.user_id)
-        .order('start_date', { ascending: false });
-
-      if (error) throw error;
-      setExperiences(data || []);
+      const data = await dbService.query('experience', {
+        where: [['user_id', '==', profile.user_id]],
+        orderBy: [['start_date', 'desc']],
+      });
+      setExperiences((data || []) as Experience[]);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -87,16 +84,9 @@ export function ExperienceSection() {
       };
 
       if (editingId) {
-        const { error } = await supabase
-          .from('experience')
-          .update(payload)
-          .eq('id', editingId);
-        if (error) throw error;
+        await dbService.update('experience', editingId, payload);
       } else {
-        const { error } = await supabase
-          .from('experience')
-          .insert(payload);
-        if (error) throw error;
+        await dbService.create('experience', payload);
       }
 
       await loadExperiences();
@@ -117,13 +107,7 @@ export function ExperienceSection() {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('experience')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
+      await dbService.delete('experience', id);
       await loadExperiences();
       toast({
         title: "Deleted",
