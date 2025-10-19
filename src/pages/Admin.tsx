@@ -12,22 +12,22 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, Users, Building2, Settings, Plus, Edit2, Trash2, UserCheck, AlertTriangle } from 'lucide-react';
+import { dbService } from '@/services/database';
 
 interface Department {
   id: string;
   name: string;
   code: string;
   hod_id?: string;
-  created_at: string;
-  updated_at: string;
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 interface UserProfile {
   id: string;
-  user_id: string;
+  uid?: string;
   email: string;
   full_name: string;
   roll_number?: string;
@@ -38,8 +38,8 @@ interface UserProfile {
   academic_year?: string;
   is_active: boolean;
   avatar_url?: string;
-  created_at: string;
-  updated_at: string;
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 interface SystemSetting {
@@ -48,8 +48,8 @@ interface SystemSetting {
   setting_value: any;
   description?: string;
   is_public: boolean;
-  created_at: string;
-  updated_at: string;
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 export default function Admin() {
@@ -83,31 +83,16 @@ export default function Admin() {
       setIsLoading(true);
       
       // Load departments
-      const { data: deptData, error: deptError } = await supabase
-        .from('departments')
-        .select('*')
-        .order('name');
-      
-      if (deptError) throw deptError;
-      setDepartments(deptData || []);
+      const deptData = await dbService.getAll('departments');
+      setDepartments((deptData || []) as Department[]);
 
-      // Load users
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (userError) throw userError;
-      setUsers(userData || []);
+      // Load users (profiles)
+      const userData = await dbService.getAll('profiles');
+      setUsers((userData || []) as UserProfile[]);
 
       // Load system settings
-      const { data: settingsData, error: settingsError } = await supabase
-        .from('system_settings')
-        .select('*')
-        .order('setting_key');
-      
-      if (settingsError) throw settingsError;
-      setSettings(settingsData || []);
+      const settingsData = await dbService.getAll('system_settings');
+      setSettings((settingsData || []) as SystemSetting[]);
 
     } catch (error: any) {
       toast({
@@ -131,20 +116,16 @@ export default function Admin() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('departments')
-        .insert([newDepartment])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setDepartments([...departments, data]);
+      const id = await dbService.create('departments', newDepartment);
+      setDepartments([
+        ...departments, 
+        { id, ...newDepartment }
+      ]);
       setNewDepartment({ name: '', code: '' });
       
       toast({
         title: "Department created",
-        description: `${data.name} has been added successfully`,
+        description: `${newDepartment.name} has been added successfully`,
       });
     } catch (error: any) {
       toast({
@@ -159,20 +140,13 @@ export default function Admin() {
     if (!editingDepartment) return;
 
     try {
-      const { data, error } = await supabase
-        .from('departments')
-        .update({ 
-          name: editingDepartment.name, 
-          code: editingDepartment.code 
-        })
-        .eq('id', editingDepartment.id)
-        .select()
-        .single();
-
-      if (error) throw error;
+      await dbService.update('departments', editingDepartment.id, { 
+        name: editingDepartment.name, 
+        code: editingDepartment.code 
+      });
 
       setDepartments(departments.map(dept => 
-        dept.id === data.id ? data : dept
+        dept.id === editingDepartment.id ? { ...dept, ...editingDepartment } : dept
       ));
       setEditingDepartment(null);
       
@@ -193,13 +167,7 @@ export default function Admin() {
     if (!confirm('Are you sure you want to delete this department?')) return;
 
     try {
-      const { error } = await supabase
-        .from('departments')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
+      await dbService.delete('departments', id);
       setDepartments(departments.filter(dept => dept.id !== id));
       
       toast({
@@ -219,23 +187,16 @@ export default function Admin() {
     if (!editingUser) return;
 
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: editingUser.full_name,
-          role: editingUser.role,
-          department_id: editingUser.department_id,
-          section_id: editingUser.section_id,
-          is_active: editingUser.is_active,
-        })
-        .eq('id', editingUser.id)
-        .select()
-        .single();
+      await dbService.update('profiles', editingUser.id, {
+        full_name: editingUser.full_name,
+        role: editingUser.role,
+        department_id: editingUser.department_id,
+        section_id: editingUser.section_id,
+        is_active: editingUser.is_active,
+      });
 
-      if (error) throw error;
-
-      setUsers(users.map(user => 
-        user.id === data.id ? data : user
+      setUsers(users.map(u => 
+        u.id === editingUser.id ? { ...u, ...editingUser } : u
       ));
       setEditingUser(null);
       
@@ -256,21 +217,14 @@ export default function Admin() {
     if (!editingSetting) return;
 
     try {
-      const { data, error } = await supabase
-        .from('system_settings')
-        .update({
-          setting_value: editingSetting.setting_value,
-          description: editingSetting.description,
-          is_public: editingSetting.is_public,
-        })
-        .eq('id', editingSetting.id)
-        .select()
-        .single();
+      await dbService.update('system_settings', editingSetting.id, {
+        setting_value: editingSetting.setting_value,
+        description: editingSetting.description,
+        is_public: editingSetting.is_public,
+      });
 
-      if (error) throw error;
-
-      setSettings(settings.map(setting => 
-        setting.id === data.id ? data : setting
+      setSettings(settings.map(s => 
+        s.id === editingSetting.id ? { ...s, ...editingSetting } : s
       ));
       setEditingSetting(null);
       
@@ -384,7 +338,7 @@ export default function Admin() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {new Date(dept.created_at).toLocaleDateString()}
+                          {dept.createdAt ? new Date(dept.createdAt.seconds ? dept.createdAt.seconds * 1000 : dept.createdAt).toLocaleDateString() : '—'}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
@@ -433,28 +387,28 @@ export default function Admin() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.full_name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
+                    {users.map((u) => (
+                      <TableRow key={u.id}>
+                        <TableCell className="font-medium">{u.full_name}</TableCell>
+                        <TableCell>{u.email}</TableCell>
                         <TableCell>
-                          <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                            {user.role}
+                          <Badge variant={u.role === 'admin' ? 'default' : 'secondary'}>
+                            {u.role}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {departments.find(d => d.id === user.department_id)?.code || 'N/A'}
+                          {departments.find(d => d.id === u.department_id)?.code || 'N/A'}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={user.is_active ? 'default' : 'destructive'}>
-                            {user.is_active ? 'Active' : 'Inactive'}
+                          <Badge variant={u.is_active ? 'default' : 'destructive'}>
+                            {u.is_active ? 'Active' : 'Inactive'}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setEditingUser(user)}
+                            onClick={() => setEditingUser(u)}
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
@@ -477,23 +431,23 @@ export default function Admin() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {settings.map((setting) => (
-                    <div key={setting.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  {settings.map((s) => (
+                    <div key={s.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <h4 className="font-medium">{setting.setting_key}</h4>
-                        <p className="text-sm text-muted-foreground">{setting.description}</p>
+                        <h4 className="font-medium">{s.setting_key}</h4>
+                        <p className="text-sm text-muted-foreground">{s.description}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Current: {JSON.stringify(setting.setting_value)}
+                          Current: {JSON.stringify(s.setting_value)}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={setting.is_public ? 'default' : 'secondary'}>
-                          {setting.is_public ? 'Public' : 'Private'}
+                        <Badge variant={s.is_public ? 'default' : 'secondary'}>
+                          {s.is_public ? 'Public' : 'Private'}
                         </Badge>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setEditingSetting(setting)}
+                          onClick={() => setEditingSetting(s)}
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
