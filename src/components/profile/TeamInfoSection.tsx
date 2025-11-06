@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Users, Crown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { dbService } from "@/services/database";
 
 interface Team {
   id: string;
@@ -29,30 +29,29 @@ export function TeamInfoSection() {
 
   const loadTeams = async () => {
     if (!profile) return;
-
     try {
       setLoading(true);
-
-      // Load teams where user is a member
-      const { data: memberData, error: memberError } = await supabase
-        .from('team_members')
-        .select('team_id, teams(*)')
-        .eq('user_id', profile.user_id)
-        .eq('is_active', true);
-
-      if (memberError) throw memberError;
-
-      const memberTeams = memberData?.map((tm: any) => tm.teams).filter(Boolean) || [];
+      // Get all team membership records for this user
+      const memberTeamMemberships = await dbService.query('team_members', {
+        where: [['user_id', '==', profile.user_id], ['is_active', '==', true]],
+      });
+      // For each, fetch the target team info
+      const memberTeams: Team[] = [];
+      if (memberTeamMemberships && Array.isArray(memberTeamMemberships)) {
+        for (const tm of memberTeamMemberships) {
+          if (tm.team_id) {
+            const team = await dbService.read('teams', tm.team_id);
+            if (team) memberTeams.push(team as Team);
+          }
+        }
+      }
       setTeams(memberTeams);
 
-      // Load teams where user is team lead
-      const { data: leadData, error: leadError } = await supabase
-        .from('teams')
-        .select('*')
-        .eq('team_lead_id', profile.user_id);
-
-      if (leadError) throw leadError;
-      setLedTeams(leadData || []);
+      // Get all teams led by the user
+      const ledResults = await dbService.query('teams', {
+        where: [['team_lead_id', '==', profile.user_id]],
+      });
+      setLedTeams((ledResults || []) as Team[]);
     } catch (error) {
       console.error('Error loading teams:', error);
     } finally {
@@ -157,7 +156,7 @@ export function TeamInfoSection() {
                 ? "You haven't created any teams yet" 
                 : "You're not part of any teams yet"}
             </p>
-            <Button onClick={() => navigate('/')}>
+            <Button onClick={() => navigate('/')}> 
               {isTeamLead ? 'Create a Team' : 'Browse Teams'}
             </Button>
           </div>
