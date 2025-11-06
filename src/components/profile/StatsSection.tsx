@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2, TrendingUp, Award, Flame, Target } from "lucide-react";
+import { dbService } from "@/services/database";
 
 interface DailyStats {
   platform: string;
@@ -27,15 +27,12 @@ export function StatsSection() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('daily_stats')
-        .select('*')
-        .eq('user_id', profile.user_id)
-        .order('date', { ascending: false })
-        .limit(5);
-
-      if (error) throw error;
-      setStats(data || []);
+      const results = await dbService.query('daily_stats', {
+        where: [['user_id', '==', profile.user_id]],
+        orderBy: [['date', 'desc']],
+        limit: 5,
+      });
+      setStats((results || []) as DailyStats[]);
     } catch (error) {
       console.error('Error loading stats:', error);
     } finally {
