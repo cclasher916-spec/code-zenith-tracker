@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle, Users, Flame, Trophy, FileEdit } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { dbService } from "@/services/database";
 
 interface Activity {
   id: string;
@@ -47,15 +47,13 @@ export function ActivityTimelineSection() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('activity_log')
-        .select('*')
-        .eq('user_id', profile.user_id)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      if (error) throw error;
-      setActivities(data || []);
+      // Query Firebase for activity_log for this user, ordered, with limit
+      const activityResults = await dbService.query('activity_log', {
+        where: [['user_id', '==', profile.user_id]],
+        orderBy: [['created_at', 'desc']],
+        limit,
+      });
+      setActivities((activityResults || []) as Activity[]);
     } catch (error: any) {
       toast({
         variant: "destructive",
