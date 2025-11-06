@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Bell, Check, Trash2 } from "lucide-react";
+import { dbService } from "@/services/database";
 
 interface Notification {
   id: string;
@@ -31,15 +31,12 @@ export function NotificationsSection() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', profile.user_id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      setNotifications(data || []);
+      const results = await dbService.query('notifications', {
+        where: [['user_id', '==', profile.user_id]],
+        orderBy: [['created_at', 'desc']],
+        limit: 20,
+      });
+      setNotifications((results || []) as Notification[]);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -53,12 +50,7 @@ export function NotificationsSection() {
 
   const markAsRead = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('id', id);
-
-      if (error) throw error;
+      await dbService.update('notifications', id, { is_read: true });
       await loadNotifications();
     } catch (error: any) {
       toast({
@@ -71,12 +63,7 @@ export function NotificationsSection() {
 
   const deleteNotification = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await dbService.delete('notifications', id);
       await loadNotifications();
       toast({
         title: "Deleted",
@@ -95,13 +82,21 @@ export function NotificationsSection() {
     if (!profile) return;
 
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('user_id', profile.user_id)
-        .eq('is_read', false);
+      const results = await dbService.query('notifications', {
+        where: [
+          ['user_id', '==', profile.user_id],
+          ['is_read', '==', false],
+        ],
+      });
 
-      if (error) throw error;
+      if (results && Array.isArray(results)) {
+        await Promise.all(
+          results.map((n: Notification) =>
+            dbService.update('notifications', n.id, { is_read: true })
+          )
+        );
+      }
+
       await loadNotifications();
       toast({
         title: "All Read",
