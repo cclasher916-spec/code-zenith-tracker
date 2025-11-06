@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Trophy, Flame, Target, Crown } from "lucide-react";
 import { format } from "date-fns";
+import { dbService } from "@/services/database";
 
 interface Achievement {
   id: string;
@@ -43,17 +43,13 @@ export function AchievementsSection() {
 
   const loadAchievements = async () => {
     if (!profile) return;
-
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('achievements')
-        .select('*')
-        .eq('user_id', profile.user_id)
-        .order('earned_at', { ascending: false });
-
-      if (error) throw error;
-      setAchievements(data || []);
+      const results = await dbService.query('achievements', {
+        where: [['user_id', '==', profile.user_id]],
+        orderBy: [['earned_at', 'desc']],
+      });
+      setAchievements((results || []) as Achievement[]);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -95,7 +91,6 @@ export function AchievementsSection() {
               {earnedAchievements.map((achievement) => {
                 const Icon = categoryIcons[achievement.category] || Trophy;
                 const colorClass = categoryColors[achievement.category] || "bg-gray-100 dark:bg-gray-900/20";
-                
                 return (
                   <div
                     key={achievement.id}
@@ -130,7 +125,6 @@ export function AchievementsSection() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {lockedAchievements.map((achievement) => {
                 const Icon = categoryIcons[achievement.category] || Trophy;
-                
                 return (
                   <div
                     key={achievement.id}
