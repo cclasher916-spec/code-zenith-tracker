@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
 import { Plus, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { dbService } from "@/services/database";
 
 interface Skill {
   id: string;
@@ -34,14 +34,11 @@ export function SkillsSection() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('skills')
-        .select('*')
-        .eq('user_id', profile.user_id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setSkills(data || []);
+      const results = await dbService.query('skills', {
+        where: [['user_id', '==', profile.user_id]],
+        orderBy: [['created_at', 'desc']],
+      });
+      setSkills((results || []) as Skill[]);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -55,20 +52,14 @@ export function SkillsSection() {
 
   const addSkill = async () => {
     if (!profile) return;
-    
     if (newSkill.trim() && !skills.some(s => s.name.toLowerCase() === newSkill.trim().toLowerCase())) {
       try {
-        const { error } = await supabase
-          .from('skills')
-          .insert({
-            user_id: profile.user_id,
-            name: newSkill.trim(),
-            category: skillCategory,
-            level: skillLevel,
-          });
-
-        if (error) throw error;
-
+        await dbService.create('skills', {
+          user_id: profile.user_id,
+          name: newSkill.trim(),
+          category: skillCategory,
+          level: skillLevel,
+        });
         await loadSkills();
         setNewSkill('');
         toast({
@@ -87,13 +78,7 @@ export function SkillsSection() {
 
   const removeSkill = async (skillId: string, skillName: string) => {
     try {
-      const { error } = await supabase
-        .from('skills')
-        .delete()
-        .eq('id', skillId);
-
-      if (error) throw error;
-
+      await dbService.delete('skills', skillId);
       await loadSkills();
       toast({
         title: "Skill Removed",
