@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { dbService } from "@/services/database";
 import { useToast } from "@/hooks/use-toast";
 import { Code, Github, Trophy, Target, Loader2, ExternalLink } from "lucide-react";
 
@@ -14,6 +14,7 @@ interface PlatformProfile {
   username: string;
   profile_url?: string;
   is_verified: boolean;
+  user_id: string;
 }
 
 const platforms = [
@@ -41,20 +42,18 @@ export function PlatformProfilesSection() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('platform_profiles')
-        .select('*')
-        .eq('user_id', profile.user_id);
-
-      if (error) throw error;
+      // Query platform_profiles collection where user_id matches
+      const data = await dbService.query('platform_profiles', {
+        where: [['user_id', '==', profile.user_id]]
+      });
 
       const profileMap: Record<string, string> = {};
-      data?.forEach((p: PlatformProfile) => {
+      data?.forEach((p: any) => {
         profileMap[p.platform] = p.username;
       });
 
       setProfiles(profileMap);
-      setExistingProfiles(data || []);
+      setExistingProfiles(data as PlatformProfile[]);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -72,11 +71,15 @@ export function PlatformProfilesSection() {
     try {
       setSaving(true);
 
-      // Delete existing profiles
-      await supabase
-        .from('platform_profiles')
-        .delete()
-        .eq('user_id', profile.user_id);
+      // Delete existing profiles for this user
+      const existingDocs = await dbService.query('platform_profiles', {
+        where: [['user_id', '==', profile.user_id]]
+      });
+
+      // Delete each existing profile
+      for (const doc of existingDocs) {
+        await dbService.delete('platform_profiles', doc.id);
+      }
 
       // Insert new profiles
       const newProfiles = Object.entries(profiles)
@@ -86,14 +89,13 @@ export function PlatformProfilesSection() {
           platform,
           username: username.trim(),
           profile_url: platforms.find(p => p.key === platform)?.urlPattern.replace('{username}', username.trim()),
+          is_verified: false
         }));
 
       if (newProfiles.length > 0) {
-        const { error } = await supabase
-          .from('platform_profiles')
-          .insert(newProfiles);
-
-        if (error) throw error;
+        for (const profileData of newProfiles) {
+          await dbService.create('platform_profiles', profileData);
+        }
       }
 
       await loadPlatformProfiles();
