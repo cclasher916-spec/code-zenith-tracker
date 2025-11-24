@@ -6,7 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { dbService } from "@/services/database";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { Code2, User, Building, Users } from "lucide-react";
 
 interface AuthModalProps {
@@ -35,7 +37,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
-  
+
   // Form states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,22 +48,18 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [sectionId, setSectionId] = useState("");
   const [role, setRole] = useState<'student' | 'team_lead' | 'advisor' | 'hod' | 'admin'>('student');
 
-  // Load departments and sections
+  // Load departments and sections using Firebase
   useEffect(() => {
     const loadData = async () => {
-      const { data: deptData } = await supabase
-        .from('departments')
-        .select('*')
-        .order('name');
-      
-      if (deptData) setDepartments(deptData);
+      try {
+        const deptData = await dbService.getAll('departments');
+        if (deptData) setDepartments(deptData as Department[]);
 
-      const { data: sectionData } = await supabase
-        .from('sections')
-        .select('*')
-        .order('name');
-      
-      if (sectionData) setSections(sectionData);
+        const sectionData = await dbService.getAll('sections');
+        if (sectionData) setSections(sectionData as Section[]);
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      }
     };
 
     if (isOpen) {
@@ -108,15 +106,9 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
     try {
       setIsResettingPassword(true);
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/`,
+      await sendPasswordResetEmail(auth, email, {
+        url: `${window.location.origin}/`,
       });
-
-      if (error) {
-        console.error('Password reset error:', error);
-        return;
-      }
-
       setResetEmailSent(true);
     } catch (error) {
       console.error('Password reset error:', error);
@@ -171,8 +163,8 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                         Password reset link sent to your email! Check your inbox and follow the instructions.
                       </p>
                     </div>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => {
                         setShowForgotPassword(false);
                         setResetEmailSent(false);
@@ -197,7 +189,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                     </div>
 
                     <div className="flex space-x-2">
-                      <Button 
+                      <Button
                         type="button"
                         variant="outline"
                         onClick={() => setShowForgotPassword(false)}
@@ -205,9 +197,9 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                       >
                         Cancel
                       </Button>
-                      <Button 
-                        type="submit" 
-                        className="flex-1" 
+                      <Button
+                        type="submit"
+                        className="flex-1"
                         disabled={isResettingPassword}
                       >
                         {isResettingPassword ? "Sending..." : "Send Reset Link"}
@@ -243,7 +235,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button 
+                  <Button
                     type="button"
                     variant="link"
                     size="sm"

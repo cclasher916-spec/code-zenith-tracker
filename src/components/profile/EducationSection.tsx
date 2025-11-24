@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
+import { dbService } from "@/services/database";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, GraduationCap, Trash2, Edit } from "lucide-react";
 
@@ -19,6 +19,7 @@ interface Education {
   end_year: number | null;
   percentage_cgpa: number | null;
   achievements: string | null;
+  user_id?: string;
 }
 
 export function EducationSection() {
@@ -47,19 +48,15 @@ export function EducationSection() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('education')
-        .select('*')
-        .eq('user_id', profile.user_id)
-        .order('start_year', { ascending: false });
-
-      if (error) throw error;
-      setEducations(data || []);
+      const data = await dbService.query('education', {
+        where: [['user_id', '==', profile.user_id]],
+      });
+      setEducations(data as Education[]);
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Load Failed",
-        description: error.message,
+        description: error.message || "Failed to load education data",
       });
     } finally {
       setLoading(false);
@@ -79,23 +76,21 @@ export function EducationSection() {
     }
 
     try {
-      const payload = {
+      const payload: Partial<Education> = {
         user_id: profile.user_id,
-        ...formData,
+        institution: formData.institution,
+        degree: formData.degree,
+        field: formData.field,
+        start_year: formData.start_year,
+        end_year: formData.end_year,
         percentage_cgpa: formData.percentage_cgpa ? parseFloat(formData.percentage_cgpa) : null,
+        achievements: formData.achievements || null,
       };
 
       if (editingId) {
-        const { error } = await supabase
-          .from('education')
-          .update(payload)
-          .eq('id', editingId);
-        if (error) throw error;
+        await dbService.update('education', editingId, payload);
       } else {
-        const { error } = await supabase
-          .from('education')
-          .insert(payload);
-        if (error) throw error;
+        await dbService.add('education', payload);
       }
 
       await loadEducations();
@@ -109,20 +104,14 @@ export function EducationSection() {
       toast({
         variant: "destructive",
         title: "Save Failed",
-        description: error.message,
+        description: error.message || "Failed to save education data",
       });
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('education')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
+      await dbService.delete('education', id);
       await loadEducations();
       toast({
         title: "Deleted",
@@ -132,7 +121,7 @@ export function EducationSection() {
       toast({
         variant: "destructive",
         title: "Delete Failed",
-        description: error.message,
+        description: error.message || "Failed to delete education entry",
       });
     }
   };
