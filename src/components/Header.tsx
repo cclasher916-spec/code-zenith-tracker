@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
-import { 
-  Menu, 
-  X, 
-  Code2, 
-  Trophy, 
-  Users, 
+import {
+  Menu,
+  X,
+  Code2,
+  Trophy,
+  Users,
   BarChart3,
   LogIn,
   LogOut,
@@ -26,7 +26,7 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   const handleLogoClick = () => {
     // Navigate to home
     navigate('/');
@@ -87,7 +87,7 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
                 <BarChart3 className={`w-4 h-4 ${getRoleColor(profile.role)}`} />
                 <span>Dashboard</span>
               </Button>
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
@@ -107,21 +107,6 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
                       {profile.role.replace('_', ' ').toUpperCase()}
                     </div>
                   </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
-                  {profile.role === 'admin' && (
-                    <DropdownMenuItem onClick={() => (window.location.href = '/admin')}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Admin Panel</span>
-                    </DropdownMenuItem>
-                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -184,8 +169,8 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
                   <p className="text-sm text-muted-foreground">{profile.role.replace('_', ' ').toUpperCase()}</p>
                 </div>
               </div>
-              <Button 
-                className="w-full justify-start" 
+              <Button
+                className="w-full justify-start"
                 variant="ghost"
                 onClick={() => {
                   navigate('/');
@@ -194,8 +179,8 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
               >
                 Home
               </Button>
-              <Button 
-                className="w-full justify-start" 
+              <Button
+                className="w-full justify-start"
                 variant="ghost"
                 onClick={() => {
                   onRoleSelect(profile.role);
@@ -205,8 +190,8 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Dashboard
               </Button>
-              <Button 
-                className="w-full justify-start" 
+              <Button
+                className="w-full justify-start"
                 variant="ghost"
                 onClick={() => {
                   navigate('/profile');
@@ -216,8 +201,8 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
                 <User className="w-4 h-4 mr-2" />
                 Profile
               </Button>
-              <Button 
-                className="w-full justify-start" 
+              <Button
+                className="w-full justify-start"
                 variant="ghost"
                 onClick={() => {
                   signOut();
@@ -250,8 +235,8 @@ const Header = ({ onRoleSelect, onAuthModal }: HeaderProps) => {
                   );
                 })}
               </div>
-              <Button 
-                className="w-full" 
+              <Button
+                className="w-full"
                 onClick={() => {
                   onAuthModal();
                   setIsMobileMenuOpen(false);

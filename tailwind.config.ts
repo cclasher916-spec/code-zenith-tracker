@@ -1,5 +1,7 @@
 import type { Config } from "tailwindcss";
 
+import tailwindcssAnimate from "tailwindcss-animate";
+
 export default {
   darkMode: ["class"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
@@ -116,11 +118,11 @@ export default {
           },
         },
         "pulse-glow": {
-          "0%, 100%": { 
-            boxShadow: "0 0 5px hsl(var(--primary) / 0.3)" 
+          "0%, 100%": {
+            boxShadow: "0 0 5px hsl(var(--primary) / 0.3)"
           },
-          "50%": { 
-            boxShadow: "0 0 20px hsl(var(--primary) / 0.6)" 
+          "50%": {
+            boxShadow: "0 0 20px hsl(var(--primary) / 0.6)"
           },
         },
         "fade-in": {
@@ -128,13 +130,13 @@ export default {
           to: { opacity: "1" },
         },
         "slide-up": {
-          from: { 
+          from: {
             opacity: "0",
-            transform: "translateY(20px)" 
+            transform: "translateY(20px)"
           },
-          to: { 
+          to: {
             opacity: "1",
-            transform: "translateY(0)" 
+            transform: "translateY(0)"
           },
         },
       },
@@ -147,5 +149,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

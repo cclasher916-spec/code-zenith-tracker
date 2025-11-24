@@ -8,12 +8,12 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useDashboardData } from "@/components/dashboard/DashboardData";
 import { useAuth } from "@/hooks/useAuth";
-import { 
-  TrendingDown, 
-  TrendingUp, 
-  Users, 
-  Target, 
-  Code2, 
+import {
+  TrendingDown,
+  TrendingUp,
+  Users,
+  Target,
+  Code2,
   Trophy,
   Calendar,
   ArrowLeft,
@@ -25,8 +25,7 @@ import {
   Home,
   LogOut,
   Activity,
-  BarChart3,
-  TrendingUpIcon
+  BarChart3
 } from "lucide-react";
 import {
   LineChart,
@@ -47,13 +46,13 @@ import {
   Area,
   AreaChart
 } from "recharts";
-import { 
-  StudentPerformanceChart, 
-  StudentDifficultyRadar, 
-  TeamMemberBarChart, 
-  SectionLeaderboardChart, 
+import {
+  StudentPerformanceChart,
+  StudentDifficultyRadar,
+  TeamMemberBarChart,
+  SectionLeaderboardChart,
   DepartmentTrendChart,
-  UserDistributionChart 
+  UserDistributionChart
 } from "@/components/dashboard/RoleCharts";
 import { toast } from "sonner";
 import { authService } from "@/services/auth";
@@ -79,7 +78,7 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
       accentColor: "hsl(212, 85%, 45%)",
     },
     team_lead: {
-      title: "Team Leader Dashboard", 
+      title: "Team Leader Dashboard",
       subtitle: "Manage and monitor your team's performance",
       color: "text-[hsl(270,85%,60%)]",
       bgColor: "bg-[hsl(270,85%,60%)]/10",
@@ -119,7 +118,7 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
   };
 
   const config = roleConfigs[role as keyof typeof roleConfigs];
-  
+
   if (!config) return null;
 
   const getStatsCards = () => {
@@ -150,7 +149,7 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
       case 'student':
         const personalStats = stats.personalStats;
         if (!personalStats) return null;
-        
+
         return [
           {
             title: "Today's Progress",
@@ -206,7 +205,7 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
       case 'team_lead':
         const teamStats = stats.teamStats;
         if (!teamStats) return null;
-        
+
         return [
           {
             title: "Team Average",
@@ -262,35 +261,35 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
       case 'advisor':
         const sectionStats = stats.sectionStats;
         if (!sectionStats) return null;
-        
+
         return [
           {
             title: "Section Average",
-            value: `${sectionStats.sectionAverage}/day`,
-            change: sectionStats.sectionAverage > 3 ? "+Good progress" : "Needs guidance",
-            trend: sectionStats.sectionAverage > 3 ? "up" : "down",
-            color: "text-green-600"
+            value: `${sectionStats.sectionAverage} GPA`,
+            change: sectionStats.sectionAverage > 4 ? "+Above average" : "Below average",
+            trend: sectionStats.sectionAverage > 4 ? "up" : "down",
+            color: sectionStats.sectionAverage > 4 ? "text-green-600" : "text-orange-600"
           },
           {
-            title: "Active Students", 
-            value: `${sectionStats.activeStudents} of ${sectionStats.activeStudents + sectionStats.needAttention}`,
-            change: `${Math.round((sectionStats.activeStudents / (sectionStats.activeStudents + sectionStats.needAttention)) * 100)}% engagement`,
+            title: "Active Students",
+            value: `${sectionStats.activeStudents}`,
+            change: "Participating",
             trend: "up",
             color: "text-blue-600"
           },
           {
             title: "Top Performers",
-            value: `${sectionStats.topPerformers} students`,
-            change: ">10/day average",
+            value: `${sectionStats.topPerformers}`,
+            change: "Leading the pack",
             trend: "up",
             color: "text-purple-600"
           },
           {
             title: "Need Attention",
-            value: `${sectionStats.needAttention} students`,
-            change: sectionStats.needAttention === 0 ? "All engaged!" : "Follow-up required",
-            trend: sectionStats.needAttention === 0 ? "up" : "down",
-            color: sectionStats.needAttention === 0 ? "text-green-600" : "text-orange-600"
+            value: `${sectionStats.needAttention}`,
+            change: sectionStats.needAttention > 5 ? "High concern" : "Low concern",
+            trend: sectionStats.needAttention > 5 ? "down" : "up",
+            color: sectionStats.needAttention > 5 ? "text-red-600" : "text-green-600"
           }
         ].map((card, index) => (
           <Card key={card.title} className="stats-card hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-l-4" style={{ borderLeftColor: config.accentColor }}>
@@ -316,37 +315,37 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
         ));
 
       case 'hod':
-        const departmentStats = stats.departmentStats;
-        if (!departmentStats) return null;
-        
+        const deptStats = stats.departmentStats;
+        if (!deptStats) return null;
+
         return [
           {
-            title: "Department Avg",
-            value: `${departmentStats.departmentAverage}/day`,
-            change: "+18% YoY growth",
-            trend: "up",
-            color: "text-green-600"
-          },
-          {
-            title: "Total Students",
-            value: `${departmentStats.totalStudents} active`,
-            change: "Across all sections",
+            title: "Dept Average",
+            value: `${deptStats.departmentAverage} GPA`,
+            change: "Overall performance",
             trend: "up",
             color: "text-blue-600"
           },
           {
-            title: "Placement Ready",
-            value: `${Math.round((departmentStats.placementReady / departmentStats.totalStudents) * 100)}%`,
-            change: "Above target",
+            title: "Total Students",
+            value: `${deptStats.totalStudents}`,
+            change: "Enrolled",
             trend: "up",
             color: "text-purple-600"
           },
           {
-            title: "Faculty Usage",
-            value: `${departmentStats.facultyUsage} active`,
-            change: "Platform adoption",
+            title: "Placement Ready",
+            value: `${deptStats.placementReady}`,
+            change: "Qualified",
             trend: "up",
-            color: "text-amber-600"
+            color: "text-green-600"
+          },
+          {
+            title: "Faculty Usage",
+            value: `${deptStats.facultyUsage}`,
+            change: "Active faculty",
+            trend: "up",
+            color: "text-orange-600"
           }
         ].map((card, index) => (
           <Card key={card.title} className="stats-card hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-l-4" style={{ borderLeftColor: config.accentColor }}>
@@ -372,37 +371,37 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
         ));
 
       case 'admin':
-        const systemStats = stats.systemStats;
-        if (!systemStats) return null;
-        
+        const sysStats = stats.systemStats;
+        if (!sysStats) return null;
+
         return [
           {
             title: "System Health",
-            value: `${systemStats.systemHealth}%`,
-            change: "Uptime this month",
+            value: `${sysStats.systemHealth}%`,
+            change: "Operational",
             trend: "up",
             color: "text-green-600"
           },
           {
             title: "Total Users",
-            value: `${systemStats.totalUsers}`,
-            change: "Active accounts",
+            value: `${sysStats.totalUsers}`,
+            change: "Registered",
             trend: "up",
             color: "text-blue-600"
           },
           {
             title: "API Success",
-            value: `${systemStats.apiSuccess}%`,
-            change: "Data collection rate",
+            value: `${sysStats.apiSuccess}%`,
+            change: "Request rate",
             trend: "up",
             color: "text-purple-600"
           },
           {
             title: "Support Tickets",
-            value: `${systemStats.supportTickets} open`,
-            change: "Resolved today",
+            value: `${sysStats.supportTickets}`,
+            change: "Open tickets",
             trend: "down",
-            color: "text-red-600"
+            color: "text-orange-600"
           }
         ].map((card, index) => (
           <Card key={card.title} className="stats-card hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-l-4" style={{ borderLeftColor: config.accentColor }}>
@@ -433,56 +432,55 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-12">
-      <div className="container mx-auto px-4">
-        {/* Enhanced Header - Mobile Optimized */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
+    <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 transition-colors duration-500">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-7xl mx-auto"
+      >
+        {/* Header Section */}
+        <motion.div
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
         >
-          {/* Top Row: Back Button and Title */}
-          <div className="flex items-start gap-3 mb-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => navigate('/')}
-              className="hover:scale-105 transition-transform shrink-0"
-            >
-              <Home className="w-4 h-4 md:mr-2" />
-              <span className="hidden md:inline">Home</span>
-            </Button>
-            <div className="flex-1 min-w-0">
-              <h1 className={`text-xl sm:text-2xl md:text-3xl font-space-grotesk font-bold ${config.color} truncate`}>
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-3xl font-bold tracking-tight font-space-grotesk bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
                 {config.title}
               </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground truncate">{config.subtitle}</p>
             </div>
+            <p className="text-muted-foreground ml-12">
+              {config.subtitle}
+            </p>
           </div>
-          
-          {/* Bottom Row: Actions */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            {/* Date Range Filter - Full width on mobile */}
-            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted w-full sm:w-auto">
-              <Button 
-                variant={dateRange === 'today' ? 'default' : 'ghost'} 
+
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            {/* Date Range Picker - Responsive */}
+            <div className="flex bg-muted/50 p-1 rounded-lg w-full sm:w-auto">
+              <Button
+                variant={dateRange === 'today' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setDateRange('today')}
                 className="text-xs flex-1 sm:flex-initial"
               >
                 Today
               </Button>
-              <Button 
-                variant={dateRange === 'week' ? 'default' : 'ghost'} 
+              <Button
+                variant={dateRange === 'week' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setDateRange('week')}
                 className="text-xs flex-1 sm:flex-initial"
               >
                 Week
               </Button>
-              <Button 
-                variant={dateRange === 'month' ? 'default' : 'ghost'} 
+              <Button
+                variant={dateRange === 'month' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setDateRange('month')}
                 className="text-xs flex-1 sm:flex-initial"
@@ -501,8 +499,8 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
                 <Download className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Export</span>
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={handleLogout}
                 className="hover:scale-105 transition-transform hover:bg-destructive hover:text-destructive-foreground flex-1 sm:flex-initial"
@@ -524,7 +522,7 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
             <Alert className={`mb-8 border-[${config.accentColor}]/30 ${config.bgColor}`}>
               <Shield className="h-4 w-4" />
               <AlertDescription>
-                <strong>Demo Mode:</strong> This is a demonstration of the {config.title.toLowerCase()}. 
+                <strong>Demo Mode:</strong> This is a demonstration of the {config.title.toLowerCase()}.
                 {profile ? (
                   <>Sign in with a {role.replace('_', ' ')} account to access real data and full functionality.</>
                 ) : (
@@ -536,7 +534,7 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
         )}
 
         {/* Role Badge */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, delay: 0.3 }}
@@ -549,7 +547,7 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
         </motion.div>
 
         {/* Stats Cards with Animation - Mobile Responsive Grid */}
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -657,6 +655,7 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
             </div>
           )}
         </motion.div>
+
         {/* Recent Activity and Performance Overview - Mobile Responsive */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -664,91 +663,81 @@ const RoleDashboard = ({ role, onBack, isDemo = false }: RoleDashboardProps) => 
           transition={{ duration: 0.5, delay: 0.7 }}
           className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8"
         >
+          {/* Upcoming Contests */}
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center text-sm sm:text-base">
                 <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" style={{ color: config.accentColor }} />
-                Recent Activity
+                Upcoming Contests
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 sm:p-6">
-              <div className="space-y-3">
-                {[
-                  { time: "2 hours ago", event: isDemo ? "Demo: Daily data sync completed" : "Daily scraping completed", status: "success" },
-                  { time: "4 hours ago", event: isDemo ? "Demo: Sample report generated" : "Performance report generated", status: "info" },
-                  { time: "6 hours ago", event: isDemo ? "Demo: User activity simulated" : "New user registered", status: "success" },
-                  { time: "1 day ago", event: isDemo ? "Demo: Weekly stats updated" : "Weekly analytics updated", status: "info" },
-                ].map((activity, index) => (
-                  <motion.div 
-                    key={index} 
+            <CardContent>
+              <div className="space-y-4">
+                {stats.upcomingContests?.map((contest, index) => (
+                  <motion.div
+                    key={index}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.8 + index * 0.1 }}
-                    className="flex items-center space-x-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                    transition={{ delay: 0.8 + index * 0.1 }}
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                   >
-                    <div 
-                      className={`w-2 h-2 rounded-full ${
-                        activity.status === 'success' ? 'bg-success' : 'bg-info'
-                      }`}
-                    ></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{activity.event}</p>
-                      <p className="text-xs text-muted-foreground">{activity.time}</p>
+                    <div>
+                      <p className="text-sm font-medium">{contest.name}</p>
+                      <p className="text-xs text-muted-foreground">{contest.date}</p>
                     </div>
+                    <Badge variant="outline" className="text-xs">
+                      {contest.platform}
+                    </Badge>
                   </motion.div>
                 ))}
+                <Button variant="ghost" size="sm" className="w-full mt-2" onClick={() => navigate('/contests')}>
+                  View All Contests
+                </Button>
               </div>
             </CardContent>
           </Card>
 
+          {/* Pending Tasks */}
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center text-sm sm:text-base">
                 <Target className="w-4 h-4 sm:w-5 sm:h-5 mr-2" style={{ color: config.accentColor }} />
-                Performance Overview
+                Pending Tasks
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 sm:p-6">
-              <div className="space-y-6">
-                {[
-                  { label: "Monthly Goal Progress", value: 78 },
-                  { label: "Platform Integration", value: 92 },
-                  { label: "User Engagement", value: 85 },
-                ].map((metric, index) => (
-                  <motion.div 
-                    key={metric.label}
-                    initial={{ opacity: 0, x: 20 }}
+            <CardContent>
+              <div className="space-y-4">
+                {stats.pendingTasks?.map((task, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.8 + index * 0.1 }}
+                    transition={{ delay: 0.8 + index * 0.1 }}
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                   >
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>{metric.label}</span>
-                      <span className="font-medium">{metric.value}%</span>
+                    <div>
+                      <p className="text-sm font-medium">{task.title}</p>
+                      <p className="text-xs text-muted-foreground">Due: {task.due}</p>
                     </div>
-                    <Progress value={metric.value} className="h-2" />
+                    <Badge
+                      variant="secondary"
+                      className={`text-xs ${task.difficulty === 'Easy' ? 'bg-green-100 text-green-800' :
+                        task.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}
+                    >
+                      {task.difficulty}
+                    </Badge>
                   </motion.div>
                 ))}
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 1.1 }}
-                  className="pt-4 border-t border-border"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Trophy className="w-4 h-4 text-warning" />
-                      <span className="text-sm font-medium">Overall Rating</span>
-                    </div>
-                    <Badge variant="secondary" className="bg-success/10 text-success">
-                      {isDemo ? 'Demo' : 'Excellent'}
-                    </Badge>
-                  </div>
-                </motion.div>
+                <Button variant="ghost" size="sm" className="w-full mt-2" onClick={() => navigate('/tasks')}>
+                  View All Tasks
+                </Button>
               </div>
             </CardContent>
           </Card>
         </motion.div>
-      </div>
+      </motion.div>
     </div>
   );
 };

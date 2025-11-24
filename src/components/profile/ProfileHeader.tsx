@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Edit, ExternalLink, Download, Upload } from "lucide-react";
 import { dbService } from "@/services/database";
+import { storageService } from "@/services/storage";
 
 const roleColors: Record<string, string> = {
   student: "bg-blue-500",
@@ -34,7 +35,7 @@ export function ProfileHeader() {
     if (!profile || !event.target.files || event.target.files.length === 0) return;
 
     const file = event.target.files[0];
-    
+
     // Validate file
     if (!file.type.match(/^image\/(jpg|jpeg|png)$/)) {
       toast({
@@ -56,35 +57,28 @@ export function ProfileHeader() {
 
     try {
       setUploading(true);
-      
-      // Create a unique file name
+
+      // Create a unique file path
       const fileExt = file.name.split('.').pop();
-      const fileName = `${profile.user_id}-${Date.now()}.${fileExt}`;
-      
-      // For now, store the image as base64 in Firestore (you may replace with Firebase Storage later)
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        try {
-          await dbService.update('profiles', profile.id, { avatar_url: reader.result as string });
-          await refreshProfile();
-          toast({
-            title: "Avatar Updated",
-            description: "Your profile picture has been updated successfully.",
-          });
-        } catch (err: any) {
-          toast({
-            variant: "destructive",
-            title: "Update Failed",
-            description: err.message,
-          });
-        }
-      };
-      reader.readAsDataURL(file);
+      const filePath = `avatars/${profile.user_id}/${Date.now()}.${fileExt}`;
+
+      // Upload to Firebase Storage
+      const downloadURL = await storageService.uploadFile(filePath, file);
+
+      // Update profile with new avatar URL
+      await dbService.update('profiles', profile.id, { avatar_url: downloadURL });
+      await refreshProfile();
+
+      toast({
+        title: "Avatar Updated",
+        description: "Your profile picture has been updated successfully.",
+      });
     } catch (error: any) {
+      console.error(error);
       toast({
         variant: "destructive",
         title: "Upload Failed",
-        description: error.message,
+        description: "Failed to upload image. Please try again.",
       });
     } finally {
       setUploading(false);
