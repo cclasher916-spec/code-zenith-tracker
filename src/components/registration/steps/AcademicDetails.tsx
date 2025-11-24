@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { dbService } from "@/services/database";
 import { useToast } from "@/hooks/use-toast";
 
 interface AcademicDetailsProps {
@@ -49,13 +49,8 @@ export const AcademicDetails = ({ formData, onChange, role }: AcademicDetailsPro
 
   const loadDepartments = async () => {
     try {
-      const { data, error } = await supabase
-        .from('departments')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      setDepartments(data || []);
+      const depts = await dbService.getAll('departments');
+      setDepartments(depts as Department[]);
     } catch (error) {
       console.error('Error loading departments:', error);
       toast({
@@ -69,14 +64,10 @@ export const AcademicDetails = ({ formData, onChange, role }: AcademicDetailsPro
   const loadSections = async (departmentId: string) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('sections')
-        .select('*')
-        .eq('department_id', departmentId)
-        .order('code');
-
-      if (error) throw error;
-      setSections(data || []);
+      const allSections = await dbService.query('sections', {
+        where: [['department_id', '==', departmentId]]
+      });
+      setSections(allSections as Section[]);
     } catch (error) {
       console.error('Error loading sections:', error);
       toast({
@@ -127,8 +118,8 @@ export const AcademicDetails = ({ formData, onChange, role }: AcademicDetailsPro
             <Label>
               Section <span className="text-destructive">*</span>
             </Label>
-            <Select 
-              value={formData.sectionId} 
+            <Select
+              value={formData.sectionId}
               onValueChange={(value) => onChange('sectionId', value)}
               disabled={loading}
             >
