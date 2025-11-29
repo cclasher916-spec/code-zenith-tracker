@@ -52,7 +52,7 @@ export function EducationSection() {
         where: [['user_id', '==', profile.user_id]],
       });
       setEducations(data as Education[]);
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Load Failed",
@@ -100,7 +100,7 @@ export function EducationSection() {
         title: "Success",
         description: `Education ${editingId ? 'updated' : 'added'} successfully.`,
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Save Failed",

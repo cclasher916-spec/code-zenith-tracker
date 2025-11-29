@@ -60,20 +60,20 @@ export function ProfileHeader() {
 
       // Create a unique file path
       const fileExt = file.name.split('.').pop();
-      const filePath = `avatars/${profile.user_id}/${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${profile.uid}/${Date.now()}.${fileExt}`;
 
       // Upload to Firebase Storage
       const downloadURL = await storageService.uploadFile(filePath, file);
 
       // Update profile with new avatar URL
-      await dbService.update('profiles', profile.id, { avatar_url: downloadURL });
+      await dbService.update('profiles', profile.id, { avatarUrl: downloadURL });
       await refreshProfile();
 
       toast({
         title: "Avatar Updated",
         description: "Your profile picture has been updated successfully.",
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
       toast({
         variant: "destructive",
@@ -88,41 +88,40 @@ export function ProfileHeader() {
   if (!profile) return null;
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-          <div className="relative">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={(profile as any).avatar_url || undefined} alt={profile.full_name} />
-              <AvatarFallback className="text-2xl">
-                {getInitials(profile.full_name)}
-              </AvatarFallback>
+    <Card className="w-full">
+      <CardContent className="p-6">
+        <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+          <div className="relative group">
+            <Avatar className="h-24 w-24">
+              <AvatarImage src={profile.avatarUrl} />
+              <AvatarFallback>{getInitials(profile.fullName)}</AvatarFallback>
             </Avatar>
-            <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 cursor-pointer">
-              <div className="bg-primary text-primary-foreground rounded-full p-1.5 hover:bg-primary/90">
-                <Upload className="h-3 w-3" />
-              </div>
-              <input
-                id="avatar-upload"
-                type="file"
-                accept=".jpg,.jpeg,.png"
-                className="hidden"
-                onChange={handleAvatarUpload}
-                disabled={uploading}
-              />
+            <label
+              htmlFor="avatar-upload"
+              className="absolute bottom-0 right-0 p-1 bg-primary text-primary-foreground rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
+            >
+              <Upload className="h-3 w-3" />
             </label>
+            <input
+              id="avatar-upload"
+              type="file"
+              accept=".jpg,.jpeg,.png"
+              className="hidden"
+              onChange={handleAvatarUpload}
+              disabled={uploading}
+            />
           </div>
 
           <div className="flex-1 text-center md:text-left">
-            <h2 className="text-2xl font-bold">{profile.full_name}</h2>
+            <h2 className="text-2xl font-bold">{profile.fullName}</h2>
             <p className="text-muted-foreground">{profile.email}</p>
             <div className="flex items-center gap-2 mt-2 justify-center md:justify-start">
               <Badge className={roleColors[profile.role]}>
                 {profile.role.replace('_', ' ').toUpperCase()}
               </Badge>
-              {profile.department_id && (
+              {profile.departmentId && (
                 <span className="text-sm text-muted-foreground">
-                  Department • Section {profile.section_id ? 'Assigned' : 'Pending'}
+                  Department • Section {profile.sectionId ? 'Assigned' : 'Pending'}
                 </span>
               )}
             </div>

@@ -6,7 +6,6 @@ import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 import { RoleSelection } from "./steps/RoleSelection";
 import { PersonalDetails } from "./steps/PersonalDetails";
@@ -139,16 +138,16 @@ export const MultiStepRegistration = ({ isOpen, onClose }: MultiStepRegistration
         return selectedRole !== '';
       case 1: // Personal details
         return formData.firstName && formData.lastName && formData.email &&
-               (!['student', 'team_lead'].includes(selectedRole) || formData.rollNumber);
+          (!['student', 'team_lead'].includes(selectedRole) || formData.rollNumber);
       case 2: // Academic details
         return formData.departmentId && formData.academicYear &&
-               (!['student', 'team_lead', 'advisor'].includes(selectedRole) || formData.sectionId);
+          (!['student', 'team_lead', 'advisor'].includes(selectedRole) || formData.sectionId);
       case 3: // Security
-        return formData.password.length >= 8 && 
-               formData.password === formData.confirmPassword &&
-               /[A-Z]/.test(formData.password) &&
-               /[a-z]/.test(formData.password) &&
-               /[0-9]/.test(formData.password);
+        return formData.password.length >= 8 &&
+          formData.password === formData.confirmPassword &&
+          /[A-Z]/.test(formData.password) &&
+          /[a-z]/.test(formData.password) &&
+          /[0-9]/.test(formData.password);
       case steps.length - 1: // Review
         return agreements.terms && agreements.dataAccuracy;
       default:
@@ -174,25 +173,25 @@ export const MultiStepRegistration = ({ isOpen, onClose }: MultiStepRegistration
     try {
       // Register user
       await signUp(formData.email, formData.password, {
-        full_name: `${formData.firstName} ${formData.lastName}`,
-        roll_number: formData.rollNumber || undefined,
+        fullName: `${formData.firstName} ${formData.lastName}`,
+        rollNumber: formData.rollNumber || undefined,
         phone: formData.phone || undefined,
-        department_id: formData.departmentId,
-        section_id: formData.sectionId || undefined,
+        departmentId: formData.departmentId,
+        sectionId: formData.sectionId || undefined,
         role: selectedRole as any,
-        academic_year: formData.academicYear,
+        academicYear: formData.academicYear,
       });
 
       toast({
         title: "Registration Successful!",
-        description: selectedRole === 'team_lead' 
+        description: selectedRole === 'team_lead'
           ? "Your team has been created and invitations will be sent."
           : "Welcome to Code Zenith Tracker!",
       });
 
       resetForm();
       onClose();
-      
+
       // Navigate to dashboard after successful registration
       setTimeout(() => {
         navigate(`/dashboard/${selectedRole}`);
@@ -222,53 +221,53 @@ export const MultiStepRegistration = ({ isOpen, onClose }: MultiStepRegistration
 
         <div className="flex-1 overflow-y-auto py-6">
           {CurrentStepComponent === RoleSelection && (
-            <RoleSelection 
-              selectedRole={selectedRole} 
-              onRoleChange={setSelectedRole} 
+            <RoleSelection
+              selectedRole={selectedRole}
+              onRoleChange={setSelectedRole}
             />
           )}
           {CurrentStepComponent === PersonalDetails && (
-            <PersonalDetails 
-              formData={formData} 
+            <PersonalDetails
+              formData={formData}
               onChange={updateFormData}
               role={selectedRole}
             />
           )}
           {CurrentStepComponent === AcademicDetails && (
-            <AcademicDetails 
-              formData={formData} 
+            <AcademicDetails
+              formData={formData}
               onChange={updateFormData}
               role={selectedRole}
             />
           )}
           {CurrentStepComponent === AccountSecurity && (
-            <AccountSecurity 
-              formData={formData} 
+            <AccountSecurity
+              formData={formData}
               onChange={updateFormData}
             />
           )}
           {CurrentStepComponent === PlatformProfiles && (
-            <PlatformProfiles 
-              formData={formData.platforms} 
+            <PlatformProfiles
+              formData={formData.platforms}
               onChange={(field, value) => updateFormData(`platforms.${field}`, value)}
               role={selectedRole}
             />
           )}
           {CurrentStepComponent === NotificationPreferences && (
-            <NotificationPreferences 
-              formData={formData} 
+            <NotificationPreferences
+              formData={formData}
               onChange={updateFormData}
               hasPhone={!!formData.phone}
             />
           )}
           {CurrentStepComponent === TeamCreation && (
-            <TeamCreation 
-              formData={formData} 
+            <TeamCreation
+              formData={formData}
               onChange={updateFormData}
             />
           )}
           {CurrentStepComponent === ReviewAndSubmit && (
-            <ReviewAndSubmit 
+            <ReviewAndSubmit
               formData={formData}
               role={selectedRole}
               agreements={agreements}
