@@ -13,6 +13,7 @@ import Contests from "./pages/Contests";
 import Tasks from "./pages/Tasks";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import Settings from "./pages/Settings";
 
 // Profile Sub-pages
 import ProfileTeams from "./pages/profile/ProfileTeams";
@@ -41,6 +42,7 @@ const App = () => (
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard/:role" element={<Dashboard />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/settings" element={<Settings />} />
 
               {/* Profile Routes */}
               <Route path="/profile" element={<Profile />} />

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ const roleColors: Record<string, string> = {
 
 export function ProfileHeader() {
   const { profile, refreshProfile } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
 
@@ -128,9 +130,9 @@ export function ProfileHeader() {
           </div>
 
           <div className="flex flex-wrap gap-2 justify-center md:justify-end">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
               <Edit className="h-4 w-4 mr-2" />
-              Edit Profile
+              Settings
             </Button>
             <Button variant="outline" size="sm">
               <ExternalLink className="h-4 w-4 mr-2" />
