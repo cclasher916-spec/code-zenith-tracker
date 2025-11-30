@@ -29,7 +29,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData: Partial<Profile>) => Promise<void>;
   signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: (userId?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,15 +50,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const refreshProfile = async (userId?: string) => {
     const targetUserId = userId || user?.uid;
-    
+
     if (!targetUserId) {
       console.log('No user ID provided, clearing profile');
       setProfile(null);
       return;
     }
-    
+
     console.log('Refreshing profile for user:', targetUserId);
-    
+
     try {
       // Query profiles collection where uid matches the Firebase user UID
       const profiles = await dbService.query('profiles', {
@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setLoading(true);
       await authService.signIn(email, password);
-      
+
       toast({
         title: "Welcome back!",
         description: "You have been signed in successfully.",
@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string, userData: Partial<Profile>) => {
     try {
       setLoading(true);
-      
+
       // Create Firebase auth user
       const userCredential = await authService.signUp(email, password, userData.fullName);
       const firebaseUser = userCredential.user;
@@ -114,14 +114,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           uid: firebaseUser.uid,
           email: firebaseUser.email!,
           fullName: userData.fullName!,
-          rollNumber: userData.rollNumber,
-          phone: userData.phone,
-          departmentId: userData.departmentId,
-          sectionId: userData.sectionId,
+          rollNumber: userData.rollNumber || null,
+          phone: userData.phone || null,
+          departmentId: userData.departmentId || null,
+          sectionId: userData.sectionId || null,
           role: userData.role || 'student',
-          academicYear: userData.academicYear,
+          academicYear: userData.academicYear || null,
           isActive: true,
-          avatarUrl: userData.avatarUrl
+          avatarUrl: userData.avatarUrl || null
         };
 
         await dbService.create('profiles', profileData);
@@ -140,9 +140,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
 
         // Refresh profile after creation
-        setTimeout(() => {
-          refreshProfile(firebaseUser.uid);
-        }, 100);
+        await refreshProfile(firebaseUser.uid);
 
         toast({
           title: "Account Created!",
@@ -166,7 +164,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await authService.signOut();
       setUser(null);
       setProfile(null);
-      
+
       toast({
         title: "Signed Out",
         description: "You have been signed out successfully.",
@@ -183,27 +181,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let isMounted = true;
-    
+
     // Listen for Firebase auth state changes
     const unsubscribe = authService.onAuthStateChange(async (firebaseUser: User | null) => {
       if (!isMounted) return;
-      
-      console.log('Auth state change:', firebaseUser?.uid);
-      
-      if (firebaseUser) {
-        const authUser = authService.formatUser(firebaseUser);
-        setUser(authUser);
-        
-        // Load user profile
-        setTimeout(() => {
-          if (isMounted) refreshProfile(firebaseUser.uid);
-        }, 100);
-      } else {
-        setUser(null);
-        setProfile(null);
-      }
 
-      setLoading(false);
+      console.log('Auth state change:', firebaseUser?.uid);
+
+      try {
+        if (firebaseUser) {
+          const authUser = authService.formatUser(firebaseUser);
+          setUser(authUser);
+
+          // Load user profile and wait for it
+          if (isMounted) {
+            await refreshProfile(firebaseUser.uid);
+          }
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error("Error in auth state change:", error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     });
 
     return () => {
