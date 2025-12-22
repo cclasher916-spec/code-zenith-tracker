@@ -32,7 +32,7 @@ export function StatsSection() {
         orderBy: [['date', 'desc']],
         limit: 5,
       });
-      setStats((results || []) as DailyStats[]);
+      setStats((results || []) as unknown as DailyStats[]);
     } catch (error) {
       console.error('Error loading stats:', error);
     } finally {
