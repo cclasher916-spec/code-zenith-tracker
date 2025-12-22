@@ -50,8 +50,8 @@ const Index = () => {
     <>
       <div className="min-h-screen bg-background">
         {/* Header - Always visible */}
-        <Header 
-          onRoleSelect={handleRoleSelect} 
+        <Header
+          onRoleSelect={handleRoleSelect}
           onAuthModal={() => setShowAuthModal(true)}
         />
 
@@ -68,7 +68,7 @@ const Index = () => {
               <h2 className="text-3xl md:text-4xl font-space-grotesk font-bold mb-4">
                 {user && profile ? (
                   <>
-                    Welcome back, <span className="text-primary">{profile.full_name.split(' ')[0]}</span>!
+                    Welcome back, <span className="text-primary">{profile.fullName.split(' ')[0]}</span>!
                   </>
                 ) : (
                   'Choose Your Role'
@@ -129,41 +129,39 @@ const Index = () => {
                 const Icon = role.icon;
                 const isUserRole = user && profile && role.id === profile.role;
                 const isAccessible = !user || role.id === profile?.role || true; // Allow demo access
-                
+
                 return (
                   <div
                     key={role.id}
-                    className={`group relative bg-card rounded-2xl p-6 border transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${
-                      isUserRole 
-                        ? 'border-primary shadow-lg ring-2 ring-primary/20' 
+                    className={`group relative bg-card rounded-2xl p-6 border transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${isUserRole
+                        ? 'border-primary shadow-lg ring-2 ring-primary/20'
                         : 'border-border hover:shadow-2xl'
-                    } ${!isAccessible ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      } ${!isAccessible ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={() => isAccessible && handleRoleSelect(role.id)}
                   >
                     <div className={`absolute inset-0 bg-gradient-to-br ${role.color} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-300`}></div>
-                    
+
                     <div className="relative z-10">
                       <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${role.color} rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300`}>
                         <Icon className="w-8 h-8 text-white" />
                       </div>
-                      
+
                       {isUserRole && (
                         <div className="absolute top-2 right-2">
                           <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                         </div>
                       )}
-                      
-                      <h3 className={`text-xl font-space-grotesk font-bold mb-2 transition-colors ${
-                        isUserRole ? 'text-primary' : 'group-hover:text-primary'
-                      }`}>
+
+                      <h3 className={`text-xl font-space-grotesk font-bold mb-2 transition-colors ${isUserRole ? 'text-primary' : 'group-hover:text-primary'
+                        }`}>
                         {role.title}
                         {isUserRole && <span className="text-sm ml-2 text-green-600">(Your Role)</span>}
                       </h3>
-                      
+
                       <p className="text-muted-foreground text-sm mb-4 min-h-[2.5rem]">
                         {role.description}
                       </p>
-                      
+
                       <div className="space-y-2">
                         {role.features.map((feature) => (
                           <div key={feature} className="flex items-center text-xs text-muted-foreground">
@@ -172,12 +170,11 @@ const Index = () => {
                           </div>
                         ))}
                       </div>
-                      
+
                       <div className="mt-6">
-                        <Button 
-                          className={`w-full group-hover:shadow-lg transition-all duration-300 ${
-                            isUserRole ? 'bg-primary hover:bg-primary/90' : ''
-                          }`}
+                        <Button
+                          className={`w-full group-hover:shadow-lg transition-all duration-300 ${isUserRole ? 'bg-primary hover:bg-primary/90' : ''
+                            }`}
                           variant={isUserRole ? "default" : "outline"}
                           disabled={!isAccessible}
                         >
@@ -189,19 +186,19 @@ const Index = () => {
                 );
               })}
             </div>
-            
+
             {/* Authentication Notice */}
             <div className="text-center mt-12 p-6 bg-primary/5 rounded-xl border border-primary/20">
               {user && profile ? (
                 <p className="text-sm text-muted-foreground">
-                  <strong>Welcome {profile.full_name}!</strong> You can access your actual dashboard or explore demo interfaces for other roles.
+                  <strong>Welcome {profile.fullName}!</strong> You can access your actual dashboard or explore demo interfaces for other roles.
                 </p>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  <strong>Demo Mode:</strong> Click any role above to explore the dashboard interface. 
+                  <strong>Demo Mode:</strong> Click any role above to explore the dashboard interface.
                   Sign in for full access to real data and personalized features.
-                  <Button 
-                    variant="link" 
+                  <Button
+                    variant="link"
                     className="ml-2 p-0 h-auto"
                     onClick={() => setShowAuthModal(true)}
                   >
@@ -231,15 +228,15 @@ const Index = () => {
           </div>
         </footer>
       </div>
-      
-      <RegistrationFlow 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
+
+      <RegistrationFlow
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
       />
-      
-      <CreateAdminDialog 
-        open={showCreateAdmin} 
-        onOpenChange={setShowCreateAdmin} 
+
+      <CreateAdminDialog
+        open={showCreateAdmin}
+        onOpenChange={setShowCreateAdmin}
       />
 
       {/* Floating Admin Setup Button */}

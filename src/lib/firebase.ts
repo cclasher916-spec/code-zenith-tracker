@@ -14,6 +14,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+if (!firebaseConfig.apiKey) {
+  console.error('Firebase configuration is missing. Please check your .env file.');
+  // We throw an error here so the ErrorBoundary can catch it and show a helpful message
+  throw new Error('Firebase configuration is missing. Please check your .env file and ensure VITE_FIREBASE_API_KEY is set.');
+}
+
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase services

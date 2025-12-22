@@ -8,12 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, Users, Building2, Settings, Plus, Edit2, Trash2, UserCheck, AlertTriangle } from 'lucide-react';
+import { Shield, Users, Building2, Settings, Plus, Edit2, Trash2, AlertTriangle } from 'lucide-react';
 import { dbService } from '@/services/database';
 
 interface Department {
@@ -29,7 +29,7 @@ interface UserProfile {
   id: string;
   uid?: string;
   email: string;
-  full_name: string;
+  fullName: string;
   roll_number?: string;
   phone?: string;
   department_id?: string;
@@ -55,12 +55,12 @@ interface SystemSetting {
 export default function Admin() {
   const { user, profile, loading } = useAuth();
   const { toast } = useToast();
-  
+
   const [departments, setDepartments] = useState<Department[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [settings, setSettings] = useState<SystemSetting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Form states
   const [newDepartment, setNewDepartment] = useState({ name: '', code: '' });
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
@@ -81,7 +81,7 @@ export default function Admin() {
   const loadAdminData = async () => {
     try {
       setIsLoading(true);
-      
+
       // Load departments
       const deptData = await dbService.getAll('departments');
       setDepartments((deptData || []) as Department[]);
@@ -118,11 +118,11 @@ export default function Admin() {
     try {
       const id = await dbService.create('departments', newDepartment);
       setDepartments([
-        ...departments, 
+        ...departments,
         { id, ...newDepartment }
       ]);
       setNewDepartment({ name: '', code: '' });
-      
+
       toast({
         title: "Department created",
         description: `${newDepartment.name} has been added successfully`,
@@ -140,16 +140,16 @@ export default function Admin() {
     if (!editingDepartment) return;
 
     try {
-      await dbService.update('departments', editingDepartment.id, { 
-        name: editingDepartment.name, 
-        code: editingDepartment.code 
+      await dbService.update('departments', editingDepartment.id, {
+        name: editingDepartment.name,
+        code: editingDepartment.code
       });
 
-      setDepartments(departments.map(dept => 
+      setDepartments(departments.map(dept =>
         dept.id === editingDepartment.id ? { ...dept, ...editingDepartment } : dept
       ));
       setEditingDepartment(null);
-      
+
       toast({
         title: "Department updated",
         description: "Changes saved successfully",
@@ -169,7 +169,7 @@ export default function Admin() {
     try {
       await dbService.delete('departments', id);
       setDepartments(departments.filter(dept => dept.id !== id));
-      
+
       toast({
         title: "Department deleted",
         description: "Department has been removed successfully",
@@ -188,18 +188,18 @@ export default function Admin() {
 
     try {
       await dbService.update('profiles', editingUser.id, {
-        full_name: editingUser.full_name,
+        fullName: editingUser.fullName,
         role: editingUser.role,
         department_id: editingUser.department_id,
         section_id: editingUser.section_id,
         is_active: editingUser.is_active,
       });
 
-      setUsers(users.map(u => 
+      setUsers(users.map(u =>
         u.id === editingUser.id ? { ...u, ...editingUser } : u
       ));
       setEditingUser(null);
-      
+
       toast({
         title: "User updated",
         description: "Changes saved successfully",
@@ -223,11 +223,11 @@ export default function Admin() {
         is_public: editingSetting.is_public,
       });
 
-      setSettings(settings.map(s => 
+      setSettings(settings.map(s =>
         s.id === editingSetting.id ? { ...s, ...editingSetting } : s
       ));
       setEditingSetting(null);
-      
+
       toast({
         title: "Setting updated",
         description: "Configuration saved successfully",
@@ -300,12 +300,12 @@ export default function Admin() {
                   <Input
                     placeholder="Department name"
                     value={newDepartment.name}
-                    onChange={(e) => setNewDepartment({...newDepartment, name: e.target.value})}
+                    onChange={(e) => setNewDepartment({ ...newDepartment, name: e.target.value })}
                   />
                   <Input
                     placeholder="Code (e.g., CSE)"
                     value={newDepartment.code}
-                    onChange={(e) => setNewDepartment({...newDepartment, code: e.target.value})}
+                    onChange={(e) => setNewDepartment({ ...newDepartment, code: e.target.value })}
                   />
                   <Button onClick={handleCreateDepartment}>
                     <Plus className="h-4 w-4 mr-2" />
@@ -389,7 +389,7 @@ export default function Admin() {
                   <TableBody>
                     {users.map((u) => (
                       <TableRow key={u.id}>
-                        <TableCell className="font-medium">{u.full_name}</TableCell>
+                        <TableCell className="font-medium">{u.fullName}</TableCell>
                         <TableCell>{u.email}</TableCell>
                         <TableCell>
                           <Badge variant={u.role === 'admin' ? 'default' : 'secondary'}>
@@ -537,10 +537,10 @@ export default function Admin() {
                 <Label htmlFor="user-name">Full Name</Label>
                 <Input
                   id="user-name"
-                  value={editingUser.full_name}
+                  value={editingUser.fullName}
                   onChange={(e) => setEditingUser({
                     ...editingUser,
-                    full_name: e.target.value
+                    fullName: e.target.value
                   })}
                 />
               </div>

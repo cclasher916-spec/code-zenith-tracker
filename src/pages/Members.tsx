@@ -65,7 +65,7 @@ export default function Members() {
     // Form state
     const [formData, setFormData] = useState({
         email: "",
-        full_name: "",
+        fullName: "",
         role: "student",
         department_id: "",
         year: "",
@@ -93,7 +93,7 @@ export default function Members() {
         setEditingMember(null);
         setFormData({
             email: "",
-            full_name: "",
+            fullName: "",
             role: "student",
             department_id: "",
             year: "",
@@ -106,7 +106,7 @@ export default function Members() {
         setEditingMember(member);
         setFormData({
             email: member.email || "",
-            full_name: member.full_name || "",
+            fullName: member.fullName || "",
             role: member.role || "student",
             department_id: member.department_id || "",
             year: member.year || "",
@@ -163,7 +163,7 @@ export default function Members() {
     };
 
     const filteredMembers = members.filter(member => {
-        const matchesSearch = member.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const matchesSearch = member.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             member.reg_no?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesRole = roleFilter === "all" || member.role === roleFilter;
@@ -266,10 +266,10 @@ export default function Members() {
                                                 <div className="flex items-center gap-3">
                                                     <Avatar>
                                                         <AvatarImage src={member.avatar_url} />
-                                                        <AvatarFallback>{getInitials(member.full_name)}</AvatarFallback>
+                                                        <AvatarFallback>{getInitials(member.fullName)}</AvatarFallback>
                                                     </Avatar>
                                                     <div>
-                                                        <div className="font-medium">{member.full_name}</div>
+                                                        <div className="font-medium">{member.fullName}</div>
                                                         <div className="text-sm text-muted-foreground">{member.email}</div>
                                                     </div>
                                                 </div>
@@ -337,8 +337,8 @@ export default function Members() {
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Full Name</label>
                             <Input
-                                value={formData.full_name}
-                                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                                value={formData.fullName}
+                                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                                 placeholder="John Doe"
                             />
                         </div>
@@ -411,7 +411,7 @@ export default function Members() {
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
                             This action cannot be undone. This will permanently delete the member
-                            "{memberToDelete?.full_name}" and remove their data from our servers.
+                            "{memberToDelete?.fullName}" and remove their data from our servers.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

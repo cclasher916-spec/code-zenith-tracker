@@ -128,7 +128,7 @@ export function ContestResults({ contestId, contestName, isOpen, onClose }: Cont
 
     const getUserName = (userId: string) => {
         const user = users.find(u => u.id === userId || u.user_id === userId);
-        return user ? user.full_name : "Unknown User";
+        return user ? user.fullName : "Unknown User";
     };
 
     const getUserAvatar = (userId: string) => {
@@ -178,7 +178,7 @@ export function ContestResults({ contestId, contestName, isOpen, onClose }: Cont
                                                 .filter(u => u.role === 'student')
                                                 .map(user => (
                                                     <SelectItem key={user.id} value={user.id}>
-                                                        {user.full_name} ({user.reg_no || 'No Reg'})
+                                                        {user.fullName} ({user.reg_no || 'No Reg'})
                                                     </SelectItem>
                                                 ))}
                                         </SelectContent>

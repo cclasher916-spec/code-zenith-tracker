@@ -402,7 +402,7 @@ export default function Tasks() {
                                             <SelectLabel>Students</SelectLabel>
                                             {students.map(student => (
                                                 <SelectItem key={student.id} value={student.id}>
-                                                    {student.full_name}
+                                                    {student.fullName}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>

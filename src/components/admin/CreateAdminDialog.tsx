@@ -25,7 +25,7 @@ export default function CreateAdminDialog({ open, onOpenChange }: CreateAdminDia
 
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         variant: "destructive",
@@ -37,7 +37,7 @@ export default function CreateAdminDialog({ open, onOpenChange }: CreateAdminDia
 
     try {
       setIsLoading(true);
-      
+
       await signUp(formData.email, formData.password, {
         full_name: formData.fullName,
         role: 'admin'
@@ -47,7 +47,7 @@ export default function CreateAdminDialog({ open, onOpenChange }: CreateAdminDia
         title: "Admin account created",
         description: "You can now sign in with the admin credentials",
       });
-      
+
       onOpenChange(false);
     } catch (error: any) {
       toast({
@@ -72,7 +72,7 @@ export default function CreateAdminDialog({ open, onOpenChange }: CreateAdminDia
             Create the initial admin account for MVIT Coding Tracker
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleCreateAdmin} className="space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>
@@ -84,7 +84,7 @@ export default function CreateAdminDialog({ open, onOpenChange }: CreateAdminDia
               required
             />
           </div>
-          
+
           <div>
             <Label htmlFor="fullName">Full Name</Label>
             <Input
@@ -94,7 +94,7 @@ export default function CreateAdminDialog({ open, onOpenChange }: CreateAdminDia
               required
             />
           </div>
-          
+
           <div>
             <Label htmlFor="password">Password</Label>
             <Input
@@ -105,7 +105,7 @@ export default function CreateAdminDialog({ open, onOpenChange }: CreateAdminDia
               required
             />
           </div>
-          
+
           <div>
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
@@ -116,7 +116,7 @@ export default function CreateAdminDialog({ open, onOpenChange }: CreateAdminDia
               required
             />
           </div>
-          
+
           <div className="flex gap-2">
             <Button type="submit" disabled={isLoading}>
               {isLoading ? 'Creating...' : 'Create Admin Account'}

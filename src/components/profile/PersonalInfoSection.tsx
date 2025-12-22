@@ -14,7 +14,7 @@ export function PersonalInfoSection() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    full_name: profile?.full_name || '',
+    fullName: profile?.fullName || '',
     phone: profile?.phone || '',
     date_of_birth: (profile as any)?.date_of_birth || '',
     gender: (profile as any)?.gender || '',
@@ -26,7 +26,7 @@ export function PersonalInfoSection() {
     try {
       setSaving(true);
       await dbService.update('profiles', profile.id, {
-        full_name: formData.full_name,
+        fullName: formData.fullName,
         phone: formData.phone,
         date_of_birth: formData.date_of_birth || null,
         gender: formData.gender || null,
@@ -51,7 +51,7 @@ export function PersonalInfoSection() {
 
   const handleCancel = () => {
     setFormData({
-      full_name: profile?.full_name || '',
+      fullName: profile?.fullName || '',
       phone: profile?.phone || '',
       date_of_birth: (profile as any)?.date_of_birth || '',
       gender: (profile as any)?.gender || '',
@@ -70,11 +70,11 @@ export function PersonalInfoSection() {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="full_name">Full Name</Label>
+            <Label htmlFor="fullName">Full Name</Label>
             <Input
-              id="full_name"
-              value={formData.full_name}
-              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+              id="fullName"
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
               disabled={!editing}
             />
           </div>

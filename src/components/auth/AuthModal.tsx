@@ -85,18 +85,18 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     e.preventDefault();
     try {
       await signUp(email, password, {
-        full_name: fullName,
-        roll_number: rollNumber || undefined,
+        fullName,
+        rollNumber: rollNumber || undefined,
         phone: phone || undefined,
-        department_id: departmentId || undefined,
-        section_id: sectionId || undefined,
+        departmentId: departmentId || undefined,
+        sectionId: sectionId || undefined,
         role,
-        academic_year: '2024-25',
+        academicYear: '2024-25',
       });
       onClose();
       resetForm();
     } catch (error) {
-      // Error is handled in useAuth hook
+      console.error("Signup error:", error);
     }
   };
 
@@ -314,9 +314,9 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
               <div className="space-y-2">
                 <Label>Role</Label>
-                <Select value={role} onValueChange={(value: any) => setRole(value)}>
+                <Select value={role} onValueChange={(value) => setRole(value as typeof role)}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select role" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="student">
