@@ -46,7 +46,7 @@ export function AchievementsSection() {
     try {
       setLoading(true);
       const results = await dbService.query('achievements', {
-        where: [['user_id', '==', profile.user_id]],
+        where: [['user_id', '==', profile.uid]],
         orderBy: [['earned_at', 'desc']],
       });
       setAchievements((results || []) as Achievement[]);

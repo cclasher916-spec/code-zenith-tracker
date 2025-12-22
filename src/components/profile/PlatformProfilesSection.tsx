@@ -44,7 +44,7 @@ export function PlatformProfilesSection() {
       setLoading(true);
       // Query platform_profiles collection where user_id matches
       const data = await dbService.query('platform_profiles', {
-        where: [['user_id', '==', profile.user_id]]
+        where: [['user_id', '==', profile.uid]]
       });
 
       const profileMap: Record<string, string> = {};
@@ -73,7 +73,7 @@ export function PlatformProfilesSection() {
 
       // Delete existing profiles for this user
       const existingDocs = await dbService.query('platform_profiles', {
-        where: [['user_id', '==', profile.user_id]]
+        where: [['user_id', '==', profile.uid]]
       });
 
       // Delete each existing profile
@@ -85,7 +85,7 @@ export function PlatformProfilesSection() {
       const newProfiles = Object.entries(profiles)
         .filter(([_, username]) => username.trim() !== '')
         .map(([platform, username]) => ({
-          user_id: profile.user_id,
+          user_id: profile.uid,
           platform,
           username: username.trim(),
           profile_url: platforms.find(p => p.key === platform)?.urlPattern.replace('{username}', username.trim()),

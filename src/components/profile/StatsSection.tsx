@@ -28,7 +28,7 @@ export function StatsSection() {
     try {
       setLoading(true);
       const results = await dbService.query('daily_stats', {
-        where: [['user_id', '==', profile.user_id]],
+        where: [['user_id', '==', profile.uid]],
         orderBy: [['date', 'desc']],
         limit: 5,
       });

@@ -32,7 +32,7 @@ export function NotificationsSection() {
     try {
       setLoading(true);
       const results = await dbService.query('notifications', {
-        where: [['user_id', '==', profile.user_id]],
+        where: [['user_id', '==', profile.uid]],
         orderBy: [['created_at', 'desc']],
         limit: 20,
       });
@@ -84,7 +84,7 @@ export function NotificationsSection() {
     try {
       const results = await dbService.query('notifications', {
         where: [
-          ['user_id', '==', profile.user_id],
+          ['user_id', '==', profile.uid],
           ['is_read', '==', false],
         ],
       });

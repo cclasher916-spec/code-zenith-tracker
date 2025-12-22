@@ -35,7 +35,7 @@ export function SkillsSection() {
     try {
       setLoading(true);
       const results = await dbService.query('skills', {
-        where: [['user_id', '==', profile.user_id]],
+        where: [['user_id', '==', profile.uid]],
         orderBy: [['created_at', 'desc']],
       });
       setSkills((results || []) as Skill[]);
@@ -55,7 +55,7 @@ export function SkillsSection() {
     if (newSkill.trim() && !skills.some(s => s.name.toLowerCase() === newSkill.trim().toLowerCase())) {
       try {
         await dbService.create('skills', {
-          user_id: profile.user_id,
+          user_id: profile.uid,
           name: newSkill.trim(),
           category: skillCategory,
           level: skillLevel,

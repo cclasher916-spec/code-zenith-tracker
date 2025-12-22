@@ -127,7 +127,7 @@ export const useDashboardData = (role: string) => {
     const today = new Date().toISOString().split('T')[0];
     const dailyStats = await dbService.query('daily_stats', {
       where: [
-        ['user_id', '==', profile.user_id],
+        ['user_id', '==', profile.uid],
         ['date', '==', today]
       ]
     });
@@ -157,7 +157,7 @@ export const useDashboardData = (role: string) => {
 
     // Get team information
     const teams = await dbService.query('teams', {
-      where: [['team_lead_id', '==', profile.user_id]]
+      where: [['team_lead_id', '==', profile.uid]]
     });
 
     const team = teams?.[0];
@@ -203,12 +203,12 @@ export const useDashboardData = (role: string) => {
   };
 
   const fetchAdvisorStats = async () => {
-    if (!profile?.section_id) return {};
+    if (!profile?.sectionId) return {};
 
     // Get section students
     const sectionStudents = await dbService.query('profiles', {
       where: [
-        ['section_id', '==', profile.section_id],
+        ['section_id', '==', profile.sectionId],
         ['role', '==', 'student']
       ]
     });
@@ -238,12 +238,12 @@ export const useDashboardData = (role: string) => {
   };
 
   const fetchHODStats = async () => {
-    if (!profile?.department_id) return {};
+    if (!profile?.departmentId) return {};
 
     // Get department students
     const deptStudents = await dbService.query('profiles', {
       where: [
-        ['department_id', '==', profile.department_id],
+        ['department_id', '==', profile.departmentId],
         ['role', '==', 'student']
       ]
     });
@@ -262,7 +262,7 @@ export const useDashboardData = (role: string) => {
     // Get faculty count
     const faculty = await dbService.query('profiles', {
       where: [
-        ['department_id', '==', profile.department_id],
+        ['department_id', '==', profile.departmentId],
         ['role', 'in', ['advisor', 'hod']]
       ]
     });

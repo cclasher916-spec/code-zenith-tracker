@@ -49,7 +49,7 @@ export function EducationSection() {
     try {
       setLoading(true);
       const data = await dbService.query('education', {
-        where: [['user_id', '==', profile.user_id]],
+        where: [['user_id', '==', profile.uid]],
       });
       setEducations(data as Education[]);
     } catch (error) {
@@ -77,7 +77,7 @@ export function EducationSection() {
 
     try {
       const payload: Partial<Education> = {
-        user_id: profile.user_id,
+        user_id: profile.uid,
         institution: formData.institution,
         degree: formData.degree,
         field: formData.field,

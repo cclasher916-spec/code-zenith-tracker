@@ -49,7 +49,7 @@ export function ActivityTimelineSection() {
       setLoading(true);
       // Query Firebase for activity_log for this user, ordered, with limit
       const activityResults = await dbService.query('activity_log', {
-        where: [['user_id', '==', profile.user_id]],
+        where: [['user_id', '==', profile.uid]],
         orderBy: [['created_at', 'desc']],
         limit,
       });

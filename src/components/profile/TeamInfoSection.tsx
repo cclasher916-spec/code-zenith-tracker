@@ -33,7 +33,7 @@ export function TeamInfoSection() {
       setLoading(true);
       // Get all team membership records for this user
       const memberTeamMemberships = await dbService.query('team_members', {
-        where: [['user_id', '==', profile.user_id], ['is_active', '==', true]],
+        where: [['user_id', '==', profile.uid], ['is_active', '==', true]],
       });
       // For each, fetch the target team info
       const memberTeams: Team[] = [];
@@ -49,7 +49,7 @@ export function TeamInfoSection() {
 
       // Get all teams led by the user
       const ledResults = await dbService.query('teams', {
-        where: [['team_lead_id', '==', profile.user_id]],
+        where: [['team_lead_id', '==', profile.uid]],
       });
       setLedTeams((ledResults || []) as Team[]);
     } catch (error) {
@@ -95,11 +95,10 @@ export function TeamInfoSection() {
                         <p className="text-sm text-muted-foreground mt-1">{team.description}</p>
                       )}
                       <div className="flex items-center space-x-4 mt-2 text-sm">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          team.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : 
-                          team.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100' : 
-                          'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100'
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full text-xs ${team.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' :
+                            team.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100' :
+                              'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100'
+                          }`}>
                           {team.status}
                         </span>
                         <span className="text-muted-foreground">
@@ -130,10 +129,9 @@ export function TeamInfoSection() {
                         <p className="text-sm text-muted-foreground mt-1">{team.description}</p>
                       )}
                       <div className="flex items-center space-x-4 mt-2 text-sm">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          team.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : 
-                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full text-xs ${team.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' :
+                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
+                          }`}>
                           {team.status}
                         </span>
                         <span className="text-muted-foreground">
@@ -152,11 +150,11 @@ export function TeamInfoSection() {
           <div className="text-center py-8">
             <Users className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
             <p className="text-muted-foreground mb-4">
-              {isTeamLead 
-                ? "You haven't created any teams yet" 
+              {isTeamLead
+                ? "You haven't created any teams yet"
                 : "You're not part of any teams yet"}
             </p>
-            <Button onClick={() => navigate('/')}> 
+            <Button onClick={() => navigate('/')}>
               {isTeamLead ? 'Create a Team' : 'Browse Teams'}
             </Button>
           </div>

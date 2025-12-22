@@ -49,7 +49,7 @@ export function ExperienceSection() {
     try {
       setLoading(true);
       const data = await dbService.query('experience', {
-        where: [['user_id', '==', profile.user_id]],
+        where: [['user_id', '==', profile.uid]],
         orderBy: [['start_date', 'desc']],
       });
       setExperiences((data || []) as Experience[]);
@@ -78,7 +78,7 @@ export function ExperienceSection() {
 
     try {
       const payload = {
-        user_id: profile.user_id,
+        user_id: profile.uid,
         ...formData,
         end_date: formData.is_current ? null : formData.end_date,
       };
